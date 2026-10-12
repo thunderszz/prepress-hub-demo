@@ -1,0 +1,21 @@
+-- =============================================================
+-- 0016_evento_tipo_creazione_manuale.sql          [MANUAL-MODE]
+--
+-- Adds the event type for the creation of a job made by hand in
+-- the portal. Without this value manual creation cannot be written
+-- to the history (LOG-02) and the job would be born without author
+-- and date.
+--
+-- Kept separate from 0017: in the first draft 0017 referenced this
+-- value in a policy, and Postgres does not allow USING an enum value
+-- in the same transaction that adds it. The full-access-only 0017 no
+-- longer references it, but the two migrations stay separate because
+-- they were applied that way in production. The value is still
+-- needed: it is the type of the creation event written by the portal.
+--
+-- REMOVAL: see supabase/manual_mode_rollback.sql (the enum value
+-- must stay: Postgres cannot remove values from an enum, and dropping
+-- it would break history events already written).
+-- =============================================================
+
+alter type public.evento_tipo add value if not exists 'creazione_manuale';
