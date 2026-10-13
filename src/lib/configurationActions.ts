@@ -29,7 +29,7 @@ async function functionErrorReason(error: unknown): Promise<string> {
   return fallback;
 }
 
-export function initialsForName(nome: string): string {
+function initialsForName(nome: string): string {
   return nome
     .trim()
     .split(/\s+/)

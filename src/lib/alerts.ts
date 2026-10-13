@@ -38,12 +38,12 @@ function businessDaysBetween(start: Date, end: Date): number {
   return count;
 }
 
-export interface AlertCtx {
+interface AlertCtx {
   eventi: Evento[];
   minutiCorrezioni: number;
 }
 
-export function alertsForCommessa(c: Commessa, ctx: AlertCtx): AlertItem[] {
+function alertsForCommessa(c: Commessa, ctx: AlertCtx): AlertItem[] {
   const out: AlertItem[] = [];
   const sospesa = !!c.sospensioneAttivaId;
   const spedito = c.stato === "spedito";
@@ -139,17 +139,6 @@ export function useAllActiveAlerts(): AlertItem[] {
     );
   }
   return out;
-}
-
-export function useAlertsForCommessa(commessaId: string): AlertItem[] {
-  const c = useCommesseStore((s) => s.commesse.find((x) => x.id === commessaId));
-  const eventi = useEventiStore((s) => s.eventi);
-  const correzioni = useCorrezioniStore((s) => s.correzioni);
-  if (!c) return [];
-  const minuti = correzioni
-    .filter((cr) => cr.commessaId === commessaId)
-    .reduce((a, b) => a + b.minuti, 0);
-  return alertsForCommessa(c, { eventi, minutiCorrezioni: minuti });
 }
 
 export const ALERT_LABELS: Record<AlertCode, string> = {

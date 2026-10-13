@@ -3,10 +3,8 @@ import { Link } from "react-router-dom";
 import { useCommesseStore } from "@/lib/store";
 import { MetricCard } from "@/components/MetricCard";
 import { Input } from "@/components/ui/input";
-import {
-  Card, CommesseMiniTable, DashHeader, KpiGrid, UltimiEventi,
-  isSpedito, speditoQuestoMese, useClienteMap,
-} from "./_shared";
+import { isSpedito, speditoQuestoMese, useClienteMap } from "./metrics";
+import { Card, CommesseMiniTable, DashHeader, KpiGrid, UltimiEventi } from "./widgets";
 
 export function DashboardAmministrazione() {
   const commesse = useCommesseStore((s) => s.commesse);

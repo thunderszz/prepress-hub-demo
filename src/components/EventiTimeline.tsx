@@ -8,7 +8,6 @@ import {
   useCommesseStore,
   useClientiStore,
 } from "@/lib/store";
-import { exportStoricoPdf } from "@/lib/storicoPdf";
 import { fmtDateTime } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -87,15 +86,11 @@ export function EventiTimeline({ commessaId }: Props) {
             size="sm"
             variant="outline"
             disabled={eventi.length === 0}
-            onClick={() =>
-              exportStoricoPdf({
-                commessa,
-                cliente,
-                eventi,
-                users,
-                emailInviate,
-              })
-            }
+            onClick={async () => {
+              // jsPDF is large: load it only when someone exports.
+              const { exportStoricoPdf } = await import("@/lib/storicoPdf");
+              exportStoricoPdf({ commessa, cliente, eventi, users, emailInviate });
+            }}
           >
             <FileDown className="h-4 w-4" /> Export PDF
           </Button>

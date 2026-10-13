@@ -9,13 +9,12 @@ import {
   Commessa,
   EsitoCaduta,
   EsitoProvaColore,
-  STATI,
   StatoCommessa,
   StepKey,
 } from "./types";
 
 /** Status → metro stop (8 stops). */
-export const STEP_BY_STATO: Record<StatoCommessa, StepKey> = {
+const STEP_BY_STATO: Record<StatoCommessa, StepKey> = {
   disponibile: "pool",
   assegnata: "assegnazione",
   in_lavorazione: "lavorazione_pdf",
@@ -29,9 +28,6 @@ export const STEP_BY_STATO: Record<StatoCommessa, StepKey> = {
 /** Current step derived from the status. */
 export const stepOf = (c: Pick<Commessa, "stato">): StepKey => STEP_BY_STATO[c.stato];
 
-/** Index (0..7) of the current stop, used by the metro map. */
-export const stepIndexOf = (c: Pick<Commessa, "stato">): number =>
-  STATI.indexOf(c.stato);
 
 /** "Natural" transitions allowed without an override. */
 const NEXT: Record<StatoCommessa, StatoCommessa[]> = {
@@ -101,9 +97,3 @@ export function canTransition(
     needsForzatura: true,
   };
 }
-
-/** Statuses reachable from `from` without an override. */
-export const nextStates = (from: StatoCommessa): StatoCommessa[] => [...NEXT[from]];
-
-/** True if the status is terminal (shipped). */
-export const isTerminale = (s: StatoCommessa) => s === "spedito";

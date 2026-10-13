@@ -95,7 +95,7 @@ export const mapCommessa = (r: Row<"commesse">): Commessa => ({
   annullataIl: clean(r.annullata_il),
 });
 
-export const mapAssegnatario = (r: Row<"commessa_assegnatari">): CommessaAssegnatario => ({
+const mapAssegnatario = (r: Row<"commessa_assegnatari">): CommessaAssegnatario => ({
   commessaId: r.commessa_id,
   userId: r.user_id,
   assegnatoIl: r.assegnato_il,

@@ -15,7 +15,7 @@ type EventoTipo = Database["public"]["Enums"]["evento_tipo"];
 type Seed = { [K in keyof Tables]: Row<K>[] };
 
 export const DEMO_PASSWORD = "demo";
-export const DEMO_DOMAIN = "acmeflexo.example";
+const DEMO_DOMAIN = "acmeflexo.example";
 
 // People (fictional)
 type Ruolo = Row<"utenti">["ruolo"];

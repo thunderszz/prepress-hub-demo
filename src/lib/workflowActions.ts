@@ -14,6 +14,7 @@ import {
   EsitoCaduta,
   EsitoProvaColore,
   EventoTipo,
+  FileTipo,
   ESITO_CADUTA_LABELS,
   ESITO_PROVA_COLORE_LABELS,
   MOTIVO_SOSPENSIONE_LABELS,
@@ -23,6 +24,7 @@ import {
 } from "./types";
 import {
   useCommesseStore,
+  useCorrezioniStore,
   useEmailStore,
   useEventiStore,
   useFileStore,
@@ -36,6 +38,10 @@ import {
 import { canEditWorkflow, canMarkShipped, Session } from "./permissions";
 import { sendEmailViaFunction } from "./emailSend";
 import { flushPendingWrites } from "./supabaseWrites";
+
+const findCommessa = (id: string) => useCommesseStore.getState().commesse.find((c) => c.id === id);
+
+const designers = (count: number) => `${count} designer${count === 1 ? "" : "s"}`;
 
 export type ActionResult =
   | { ok: true }
@@ -96,7 +102,7 @@ export interface TransitionOption {
 
 /** Returns the "natural" transitions from the current status, labelled for buttons. */
 export function transitionsFor(commessaId: string): TransitionOption[] {
-  const c = useCommesseStore.getState().commesse.find((x) => x.id === commessaId);
+  const c = findCommessa(commessaId);
   if (!c) return [];
 
   switch (c.stato) {
@@ -192,7 +198,7 @@ export function transitionsFor(commessaId: string): TransitionOption[] {
 // Take ownership
 export function prendiInCarico(commessaId: string, userId: string): ActionResult {
   const cStore = useCommesseStore.getState();
-  const c = cStore.commesse.find((x) => x.id === commessaId);
+  const c = findCommessa(commessaId);
   if (!c) return { ok: false, reason: "Job not found." };
   if (c.presaInCaricoDaUserId)
     return { ok: false, reason: "Job already claimed." };
@@ -220,7 +226,7 @@ export function assegnaCommessa(
   terminePrimoPdfIso?: string,
 ): ActionResult {
   const cStore = useCommesseStore.getState();
-  const c = cStore.commesse.find((x) => x.id === commessaId);
+  const c = findCommessa(commessaId);
   if (!c) return { ok: false, reason: "Job not found." };
   if (c.stato !== "disponibile")
     return { ok: false, reason: "The job is not in 'Available' status." };
@@ -237,7 +243,7 @@ export function assegnaCommessa(
     userId,
     eventoTipo: "assegnazione",
     eventoTitolo: "Assigned to designers",
-    eventoDettaglio: `${userIds.length} designer${userIds.length === 1 ? "" : "s"}`,
+    eventoDettaglio: designers(userIds.length),
   });
 }
 
@@ -247,7 +253,7 @@ export function modificaAssegnazione(
   userId: string,
   userIds: string[],
 ): ActionResult {
-  const c = useCommesseStore.getState().commesse.find((x) => x.id === commessaId);
+  const c = findCommessa(commessaId);
   if (!c) return { ok: false, reason: "Job not found." };
   if (c.stato !== "assegnata" && c.stato !== "in_lavorazione")
     return { ok: false, reason: "Can only be changed while 'Assigned' or 'In progress'." };
@@ -260,7 +266,7 @@ export function modificaAssegnazione(
     userId,
     tipo: "modifica_assegnazione",
     titolo: "Assignment updated",
-    dettaglio: `${userIds.length} designer${userIds.length === 1 ? "" : "s"}`,
+    dettaglio: designers(userIds.length),
   });
   return { ok: true };
 }
@@ -272,7 +278,7 @@ export function advanceTo(
   to: StatoCommessa,
   opts?: { forzaturaNota?: string },
 ): ActionResult {
-  const c = useCommesseStore.getState().commesse.find((x) => x.id === commessaId);
+  const c = findCommessa(commessaId);
   if (!c) return { ok: false, reason: "Job not found." };
   const denied = guardCanAdvance(userId, commessaId, to);
   if (denied) return denied;
@@ -297,7 +303,7 @@ export function sospendiCommessa(
   nota?: string,
 ): ActionResult {
   const cStore = useCommesseStore.getState();
-  const c = cStore.commesse.find((x) => x.id === commessaId);
+  const c = findCommessa(commessaId);
   if (!c) return { ok: false, reason: "Job not found." };
   const denied = guardCanEdit(userId, commessaId);
   if (denied) return denied;
@@ -325,7 +331,7 @@ export function sospendiCommessa(
 
 export function riattivaCommessa(commessaId: string, userId: string): ActionResult {
   const cStore = useCommesseStore.getState();
-  const c = cStore.commesse.find((x) => x.id === commessaId);
+  const c = findCommessa(commessaId);
   if (!c) return { ok: false, reason: "Job not found." };
   const denied = guardCanEdit(userId, commessaId);
   if (denied) return denied;
@@ -416,7 +422,6 @@ export function aggiungiNotaSottopassaggio(
 }
 
 // Log correction time
-import { useCorrezioniStore } from "./store";
 export function registraCorrezione(
   commessaId: string,
   userId: string,
@@ -446,7 +451,6 @@ export function registraCorrezione(
 }
 
 // Files
-import { FileTipo } from "./types";
 export function uploadFile(
   commessaId: string,
   userId: string,
@@ -550,7 +554,7 @@ export async function inviaEmail(
   userId: string,
   p: InviaEmailPayload,
 ): Promise<ActionResult & { emailId?: string }> {
-  const c = useCommesseStore.getState().commesse.find((x) => x.id === commessaId);
+  const c = findCommessa(commessaId);
   if (!c) return { ok: false, reason: "Job not found." };
   const denied = guardCanEdit(userId, commessaId, "Permission denied: you cannot send emails for this job.");
   if (denied) return denied;
@@ -602,9 +606,9 @@ export async function inviaEmail(
   emailStore.setEmailInviate([em, ...emailStore.emailInviate]);
   const sendFailure = res.sent ? null : (res.reason ?? "Sending failed.");
 
-  // 2) Advance the status ONLY if the send succeeded and it was requested.
-  //    If advancing fails, STILL record the send event: the email is
-  //    already archived and must leave a trace in the history.
+  // 2) Advance the status only if the send succeeded and it was requested.
+  //    If advancing fails, still record the send: the email is already
+  //    archived and must leave a trace in the history.
   if (!sendFailure && p.advanceState) {
     const res = performTransition({
       commessaId,
@@ -616,18 +620,17 @@ export async function inviaEmail(
       refType: "email",
       refId: em.id,
     });
-    if (res.ok === true) return flushEmailWrites(em.id);
-    const failure: { ok: false; reason: string; needsForzatura?: boolean } = res;
+    if (res.ok) return flushEmailWrites(em.id);
     useEventiStore.getState().appendEvento({
       commessaId,
       userId,
       tipo: eventoTipo,
       titolo: `${EMAIL_TEMPLATE_LABELS[p.kind]} — sent (status not advanced)`,
-      dettaglio: `${indirizzi} — ${failure.reason}`,
+      dettaglio: `${indirizzi} — ${res.reason}`,
       refType: "email",
       refId: em.id,
     });
-    return { ok: false, reason: failure.reason, needsForzatura: failure.needsForzatura, emailId: em.id };
+    return { ok: false, reason: res.reason, needsForzatura: res.needsForzatura, emailId: em.id };
   }
 
   useEventiStore.getState().appendEvento({

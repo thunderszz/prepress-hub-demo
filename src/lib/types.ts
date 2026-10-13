@@ -78,28 +78,6 @@ export const STEP_ORDER = [
 ] as const;
 export type StepKey = (typeof STEP_ORDER)[number];
 
-export const STEP_LABELS: Record<StepKey, string> = {
-  pool: "Available / Pool",
-  assegnazione: "Assignment",
-  lavorazione_pdf: "Artwork + PDF sent",
-  approvazione_pdf: "PDF approval",
-  prova_colore: "Colour proof",
-  caduta_macchina: "Press proof",
-  produzione_matrice: "Plate production",
-  spedizione: "Shipping",
-};
-
-export const STEP_SHORT: Record<StepKey, string> = {
-  pool: "Pool",
-  assegnazione: "Assign.",
-  lavorazione_pdf: "Artwork",
-  approvazione_pdf: "PDF appr.",
-  prova_colore: "Col. proof",
-  caduta_macchina: "Press proof",
-  produzione_matrice: "Plates",
-  spedizione: "Shipping",
-};
-
 // Outcomes of the colour proof and the press proof.
 export const ESITI_PROVA_COLORE = ["non_serve", "da_rifare", "spedita_approvata"] as const;
 export type EsitoProvaColore = (typeof ESITI_PROVA_COLORE)[number];
@@ -180,9 +158,6 @@ export const EMAIL_TEMPLATE_LABELS: Record<EmailTemplateKind, string> = {
   prova_colore: "Send colour proof",
   caduta: "Send press proof",
 };
-
-// Domain of the shared team mailboxes.
-export const MAILBOX_DOMAIN = "acmeflexo.example";
 
 // Entities.
 

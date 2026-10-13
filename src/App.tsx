@@ -6,16 +6,18 @@ import Commesse from "./pages/Commesse";
 import CommessaDetail from "./pages/CommessaDetail";
 import Clienti from "./pages/Clienti";
 import ClienteDetail from "./pages/ClienteDetail";
-import Configurazione from "./pages/Configurazione";
 import Profilo from "./pages/Profilo";
 import Login from "./pages/Login";
 import Logout from "./pages/Logout";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound.tsx";
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { loadAppData, subscribeToRealtime } from "@/lib/supabaseData";
 import { useSessionStore } from "@/lib/store";
+
+// Settings is the largest page and the least visited: load it on demand.
+const Configurazione = lazy(() => import("./pages/Configurazione"));
 
 const App = () => (
   <>
@@ -32,7 +34,14 @@ const App = () => (
           <Route path="/jobs/:id" element={<CommessaDetail />} />
           <Route path="/customers" element={<Clienti />} />
           <Route path="/customers/:id" element={<ClienteDetail />} />
-          <Route path="/settings" element={<Configurazione />} />
+          <Route
+            path="/settings"
+            element={
+              <Suspense fallback={null}>
+                <Configurazione />
+              </Suspense>
+            }
+          />
           <Route path="/profile" element={<Profilo />} />
         </Route>
         <Route path="*" element={<NotFound />} />

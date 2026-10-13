@@ -26,7 +26,7 @@ export interface Session {
 // Basic helpers
 export const isFullAccess = (role: Role): boolean => FULL_ACCESS_ROLES.includes(role);
 
-export const isAssegnato = (
+const isAssegnato = (
   ass: CommessaAssegnatario[],
   commessaId: string,
   userId: string,
@@ -62,7 +62,6 @@ export function canEditWorkflow(
   return false;
 }
 
-export const canSendEmail = canEditWorkflow;
 export const canUploadFile = canEditWorkflow;
 export const canSospendere = canEditWorkflow;
 export const canAddNotaSottopassaggio = canEditWorkflow;
@@ -112,12 +111,8 @@ export const canCreateCommessa = (s: Session): boolean => isFullAccess(s.role);
 export const canCreateCliente = (s: Session): boolean => isFullAccess(s.role);
 export const canRenameCliente = (s: Session): boolean => isFullAccess(s.role);
 
-// Customers and settings
-export const canEditCliente = (s: Session): boolean => isFullAccess(s.role);
+// Settings: users, teams, mailboxes and email templates.
 export const canManageUsers = (s: Session): boolean => isFullAccess(s.role);
-export const canManageGruppi = (s: Session): boolean => isFullAccess(s.role);
-export const canManageTemplates = (s: Session): boolean => isFullAccess(s.role);
-export const canManageMailboxes = (s: Session): boolean => isFullAccess(s.role);
 
 // Navigation by role (sidebar)
 export type NavKey =

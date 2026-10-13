@@ -12,7 +12,6 @@
 // "Reset demo data" brings everything back to the initial state.
 // No network calls.
 
-import { jsPDF } from "jspdf";
 import type { Database } from "../database.types";
 import { buildSeed, DEMO_PASSWORD } from "./seed";
 
@@ -406,9 +405,10 @@ const functions = {
 // seeded files generate a placeholder preview on the fly.
 const blobs = new Map<string, Blob>();
 
-function placeholderBlob(path: string, nome: string): Blob {
+async function placeholderBlob(path: string, nome: string): Promise<Blob> {
   const ext = nome.split(".").pop()?.toLowerCase();
   if (ext === "pdf") {
+    const { jsPDF } = await import("jspdf");
     const doc = new jsPDF();
     doc.setFontSize(18);
     doc.text("Prepress Hub — sample file", 20, 30);
@@ -459,7 +459,7 @@ const storage = {
         if (!file || !file.binario_disponibile) {
           return { data: null, error: { message: "Object not found" } };
         }
-        const blob = blobs.get(path) ?? placeholderBlob(path, opts?.download ?? file.nome);
+        const blob = blobs.get(path) ?? (await placeholderBlob(path, opts?.download ?? file.nome));
         return { data: { signedUrl: URL.createObjectURL(blob) }, error: null };
       },
     };

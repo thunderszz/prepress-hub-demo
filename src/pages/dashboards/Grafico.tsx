@@ -1,9 +1,8 @@
 import { useMemo } from "react";
 import { useCommesseStore, useAssegnatariStore, useCurrentUser } from "@/lib/store";
 import { MetricCard } from "@/components/MetricCard";
-import {
-  AlertList, Card, CommesseMiniTable, DashHeader, KpiGrid, useAlertsMap,
-} from "./_shared";
+import { useAlertsMap } from "./metrics";
+import { AlertList, Card, CommesseMiniTable, DashHeader, KpiGrid } from "./widgets";
 
 export function DashboardGrafico() {
   const u = useCurrentUser();
