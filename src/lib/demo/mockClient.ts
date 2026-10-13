@@ -457,7 +457,11 @@ function placeholderBlob(path: string, nome: string): Blob {
 const storage = {
   from(_bucket: string) {
     return {
-      async upload(path: string, file: Blob, _opts?: { upsert?: boolean; contentType?: string }) {
+      async upload(
+        path: string,
+        file: Blob,
+        _opts?: { upsert?: boolean; contentType?: string },
+      ): Promise<{ data: { path: string } | null; error: MockError | null }> {
         await delay(300);
         blobs.set(path, file);
         return { data: { path }, error: null };

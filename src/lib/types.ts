@@ -338,7 +338,7 @@ export interface EmailInviata {
   allegatoNome?: string;     // name of the attached PDF
   /** false once the attachment binary has expired (retention, MAIL-06). */
   allegatoDisponibile?: boolean;
-  inviataDaUserId: UUID;
+  inviataDaUserId?: UUID;
   stato: EmailStato;
 }
 
@@ -350,7 +350,7 @@ export interface FileCommessa {
   tipo: FileTipo;
   dimensioneBytes: number;
   caricatoIl: ISODate;
-  caricatoDaUserId: UUID;
+  caricatoDaUserId?: UUID;
   /** false if the binary was deleted by retention (>30 days after shipping). */
   binarioDisponibile: boolean;
   /** Path in the storage bucket (commessa-files); null if never uploaded. */

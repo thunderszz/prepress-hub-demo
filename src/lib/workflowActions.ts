@@ -26,7 +26,6 @@ import {
   STATO_LABELS,
 } from "./types";
 import {
-  useClientiStore,
   useCommesseStore,
   useEmailStore,
   useEventiStore,
@@ -35,7 +34,6 @@ import {
   useSospensioniStore,
   useUsersStore,
   useUtenteGruppiStore,
-  useTemplatesStore,
   useAssegnatariStore,
   performTransition,
 } from "./store";

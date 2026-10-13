@@ -20,7 +20,6 @@ import {
   ROLES,
   ROLE_LABELS,
   Role,
-  User,
 } from "@/lib/types";
 import { canManageUsers } from "@/lib/permissions";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";

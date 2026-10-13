@@ -201,7 +201,7 @@ interface CommesseState {
   setPatch: (id: string, patch: Partial<Commessa>) => void;
 }
 
-export const useCommesseStore = create<CommesseState>()((set, get) => ({
+export const useCommesseStore = create<CommesseState>()((set) => ({
   commesse: [],
   setCommesse: (commesse) => set({ commesse }),
   setStato: (id, stato) =>

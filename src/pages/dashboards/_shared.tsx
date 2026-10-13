@@ -9,11 +9,9 @@ import {
   useUtenteGruppiStore,
   useGruppiStore,
 } from "@/lib/store";
-import { Commessa, ROLE_LABELS, EVENTO_TIPI } from "@/lib/types";
+import { Commessa } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import { MetricCard } from "@/components/MetricCard";
 import { CommessaRowCompact } from "@/components/CommessaRow";
-import { StatoCommessaPill } from "@/components/Pills";
 import { useAllActiveAlerts, AlertItem } from "@/lib/alerts";
 import { fmtDateTime } from "@/lib/format";
 
@@ -46,7 +44,6 @@ export function useAlertsMap() {
 // ============================================================
 // Calculation helpers
 // ============================================================
-const DAY = 86400000;
 export const isSpedito = (c: Commessa) => c.stato === "spedito";
 export const isSospesa = (c: Commessa) => !!c.sospensioneAttivaId;
 

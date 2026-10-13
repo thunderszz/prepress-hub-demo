@@ -3,14 +3,13 @@ import { useCommesseStore, useClientiStore } from "@/lib/store";
 import { MetricCard } from "@/components/MetricCard";
 import {
   AlertList, Card, CommesseMiniTable, DashHeader, KpiGrid,
-  isSpedito, speditoQuestoMese, useAlertsMap, useClienteMap,
+  isSpedito, speditoQuestoMese, useAlertsMap,
 } from "./_shared";
 
 export function DashboardCommerciale() {
   const commesse = useCommesseStore((s) => s.commesse);
   const clienti = useClientiStore((s) => s.clienti);
-  const cliMap = useClienteMap();
-  const { all, byCommessa } = useAlertsMap();
+  const { all } = useAlertsMap();
 
   const attive = commesse.filter((c) => !isSpedito(c) && !c.annullataIl);
   const inAttesa = commesse.filter(

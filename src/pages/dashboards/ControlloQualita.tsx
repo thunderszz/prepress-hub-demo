@@ -3,7 +3,7 @@ import { MetricCard } from "@/components/MetricCard";
 import { Button } from "@/components/ui/button";
 import {
   Card, CommesseMiniTable, DashHeader, KpiGrid,
-  isSpedito, speditoOggi, speditoQuestoMese, useClienteMap,
+  speditoOggi, speditoQuestoMese, useClienteMap,
 } from "./_shared";
 import { advanceTo } from "@/lib/workflowActions";
 import { toast } from "@/hooks/use-toast";

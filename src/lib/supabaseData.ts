@@ -128,7 +128,7 @@ export const mapEmail = (r: Row<"email_inviate">): EmailInviata => ({
   corpo: r.corpo,
   allegatoNome: clean(r.allegato_nome),
   allegatoDisponibile: r.allegato_disponibile,
-  inviataDaUserId: r.inviata_da_user_id,
+  inviataDaUserId: clean(r.inviata_da_user_id),
   stato: r.stato,
 });
 
@@ -139,7 +139,7 @@ const mapFile = (r: Row<"file_commessa">): FileCommessa => ({
   tipo: r.tipo,
   dimensioneBytes: Number(r.dimensione_bytes),
   caricatoIl: r.caricato_il,
-  caricatoDaUserId: r.caricato_da_user_id,
+  caricatoDaUserId: clean(r.caricato_da_user_id),
   binarioDisponibile: r.binario_disponibile,
   storagePath: r.storage_path,
 });
