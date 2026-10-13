@@ -1,5 +1,4 @@
-// =============================================================
-// Workflow actions — high-level orchestration (PHASE 2)
+// Workflow actions: what the buttons on a job do.
 //
 // Every action:
 //  1. validates (status + basic permissions)
@@ -7,8 +6,7 @@
 //  3. records an immutable event in `eventi`
 //
 // Stores are accessed through getState() so actions can be called
-// outside React too (handy for tests/dev).
-// =============================================================
+// outside React too, in tests for example.
 
 import {
   EmailTemplateKind,
@@ -43,12 +41,9 @@ export type ActionResult =
   | { ok: true }
   | { ok: false; reason: string; needsForzatura?: boolean };
 
-// -------------------------------------------------------------
-// Action-side permission guards (defence in depth; in production the
-// source of truth is the RLS policies — see permissions.ts).
-// Resolves the user's role from the store so call sites don't have to
-// pass the Session around.
-// -------------------------------------------------------------
+// Permission checks repeated here as defence in depth: in production the
+// database's RLS policies are the real gate (see permissions.ts). The
+// user's role is looked up in the store, so callers pass only the user id.
 function sessionFor(userId: string): Session | null {
   const u = useUsersStore.getState().users.find((x) => x.id === userId);
   return u ? { userId: u.id, role: u.ruolo } : null;
@@ -89,9 +84,7 @@ function guardCanAdvance(
   return guardCanEdit(userId, commessaId);
 }
 
-// -------------------------------------------------------------
-// Transition labels (drive the UI buttons)
-// -------------------------------------------------------------
+// The next steps offered on a job, as button labels
 export interface TransitionOption {
   to: StatoCommessa;
   label: string;
@@ -196,9 +189,7 @@ export function transitionsFor(commessaId: string): TransitionOption[] {
   }
 }
 
-// -------------------------------------------------------------
-// Action: take ownership
-// -------------------------------------------------------------
+// Take ownership
 export function prendiInCarico(commessaId: string, userId: string): ActionResult {
   const cStore = useCommesseStore.getState();
   const c = cStore.commesse.find((x) => x.id === commessaId);
@@ -221,9 +212,7 @@ export function prendiInCarico(commessaId: string, userId: string): ActionResult
   });
 }
 
-// -------------------------------------------------------------
-// Action: assignment (WF-03/04) — full access only
-// -------------------------------------------------------------
+// Assign designers (full access only)
 export function assegnaCommessa(
   commessaId: string,
   userId: string,
@@ -252,7 +241,7 @@ export function assegnaCommessa(
   });
 }
 
-// WF-07: change assignment while "assegnata" / "in_lavorazione" — no status change.
+// Change the assignees while the job is assigned or in progress; the status stays.
 export function modificaAssegnazione(
   commessaId: string,
   userId: string,
@@ -276,9 +265,7 @@ export function modificaAssegnazione(
   return { ok: true };
 }
 
-// -------------------------------------------------------------
-// Action: advance status (optionally with an override)
-// -------------------------------------------------------------
+// Advance the status, optionally as an override
 export function advanceTo(
   commessaId: string,
   userId: string,
@@ -302,9 +289,7 @@ export function advanceTo(
   });
 }
 
-// -------------------------------------------------------------
-// Action: put on hold / resume
-// -------------------------------------------------------------
+// Put on hold and resume
 export function sospendiCommessa(
   commessaId: string,
   userId: string,
@@ -358,9 +343,7 @@ export function riattivaCommessa(commessaId: string, userId: string): ActionResu
   return { ok: true };
 }
 
-// -------------------------------------------------------------
-// Action: record outcomes (does not advance the status — buttons do)
-// -------------------------------------------------------------
+// Record proof outcomes (they don't advance the status; the buttons do)
 export function setEsitoProvaColore(
   commessaId: string,
   userId: string,
@@ -395,9 +378,7 @@ export function setEsitoCaduta(
   return { ok: true };
 }
 
-// -------------------------------------------------------------
-// Action: internal note
-// -------------------------------------------------------------
+// Notes
 export function aggiungiNotaInterna(
   commessaId: string,
   userId: string,
@@ -434,9 +415,7 @@ export function aggiungiNotaSottopassaggio(
   return { ok: true };
 }
 
-// -------------------------------------------------------------
-// Action: log correction time (option B §10)
-// -------------------------------------------------------------
+// Log correction time
 import { useCorrezioniStore } from "./store";
 export function registraCorrezione(
   commessaId: string,
@@ -466,9 +445,7 @@ export function registraCorrezione(
   return { ok: true };
 }
 
-// -------------------------------------------------------------
-// Action: files
-// -------------------------------------------------------------
+// Files
 import { FileTipo } from "./types";
 export function uploadFile(
   commessaId: string,
@@ -516,9 +493,7 @@ export function registraWeTransfer(
 // Retention cleanup is server-side (migrations 0009/0010,
 // pg_cron job "file-retention-daily"): nothing to do on the client.
 
-// =============================================================
-// EMAIL (Phase 3 — §5.6, §11)
-// =============================================================
+// Customer emails
 
 const TIPO_EVENTO_PER_KIND: Record<EmailTemplateKind, EventoTipo> = {
   pdf: "invio_pdf",
@@ -538,7 +513,7 @@ export function defaultMailboxForUser(userId: string): string | null {
   return null;
 }
 
-/** Template variable substitution (MAIL-03). */
+/** Fills the {job_number}, {job_name}, {customer} and {user_name} variables. */
 export function renderTemplate(
   tpl: string,
   ctx: {

@@ -151,7 +151,7 @@ export function EmailWizardDialog({
     }
     const destinatari = toList.emails;
     setSending(true);
-    // FILE-02: names are unique per job, so the name resolves to the id.
+    // File names are unique per job, so the name resolves to the id.
     const allegato = attachableFiles.find((f) => f.nome === allegatoNome.trim());
     const payload: InviaEmailPayload = {
       kind,
@@ -167,7 +167,7 @@ export function EmailWizardDialog({
     try {
       const res = await inviaEmail(commessa.id, session.userId, payload);
       if (!res.ok) {
-        // emailId present = archived with status 'errore' (MAIL-07): retry is possible.
+        // An emailId means the failed send was archived: the user can retry.
         if (res.emailId) setHasError(true);
         toast({
           title: res.emailId ? "Sending failed" : "Send error",

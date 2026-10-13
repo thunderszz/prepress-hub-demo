@@ -4,11 +4,11 @@
 -- storage.protect_delete: the Storage API must be used). Retention
 -- therefore FLAGS binaries as unavailable: the select policies make
 -- them inaccessible immediately. Physical deletion happens through
--- the Storage API (scheduled Edge Function, email phase §11); paths
+-- the Storage API (a scheduled Edge Function, see 0013); paths
 -- stay in the table precisely for that purge.
 -- =============================================================
 
--- 1) Availability flag for email attachments (MAIL-06:
+-- 1) Availability flag for email attachments (the archive is permanent,
 --    allegato_nome is permanent, the binary expires).
 alter table public.email_inviate
   add column if not exists allegato_disponibile boolean not null default true;

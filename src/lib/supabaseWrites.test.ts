@@ -45,7 +45,7 @@ describe("persistClientePatch", () => {
     eq.mockClear();
   });
 
-  it("persists customer email, phone and notes (CLI-04)", async () => {
+  it("persists customer email, phone and notes", async () => {
     persistClientePatch("cliente-1", {
       email: "customer@example.com",
       telefono: "0421 123456",

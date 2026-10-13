@@ -1,13 +1,10 @@
-// =============================================================
-// Alerts (§10.2) — computed ON THE FLY from the existing stores.
-// No persisted fields: everything is derived.
+// Alerts, computed from the stores on every render; nothing is stored.
 //
 // ALR-01  correction minutes total ≥ 60        → notification to Sales Manager
 // ALR-02  press proof sent > 2 working days    → without an approved outcome
 // ALR-03  expected delivery date passed        → not shipped nor on hold
 // ALR-04  > 3 months since creataIl            → not shipped
 // ALR-05  first-PDF deadline passed            → no invio_pdf yet
-// =============================================================
 
 import { Commessa, Evento } from "./types";
 import { useCommesseStore, useCorrezioniStore, useEventiStore } from "./store";
@@ -123,9 +120,7 @@ export function alertsForCommessa(c: Commessa, ctx: AlertCtx): AlertItem[] {
   return out;
 }
 
-// =============================================================
 // React hook: all active alerts (derived)
-// =============================================================
 export function useAllActiveAlerts(): AlertItem[] {
   const commesse = useCommesseStore((s) => s.commesse);
   const eventi = useEventiStore((s) => s.eventi);

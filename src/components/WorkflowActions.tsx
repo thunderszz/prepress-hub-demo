@@ -98,7 +98,7 @@ export function WorkflowActions({ commessa }: Props) {
   const canPrendi = canPrendiInCarico(session, commessa, assegnatari);
   const canSosp = canSospendere(session, commessa, assegnatari);
   const canAssegna = canAssegnare(session);
-  // WeTransfer replaces the email for heavy files (FILE-03): if the
+  // WeTransfer replaces the email for heavy files: if the
   // current status has an unblocked "send" transition, advancing the step
   // is offered with an explicit confirmation (checkbox).
   const wtTransition = canEdit
@@ -160,7 +160,7 @@ export function WorkflowActions({ commessa }: Props) {
         </p>
       )}
 
-      {/* WF-03/04: initial assignment */}
+      {/* First assignment */}
       {commessa.stato === "disponibile" && canAssegna && (
         <div>
           <Button onClick={() => setAssegnaOpen("assegna")}>
@@ -169,7 +169,7 @@ export function WorkflowActions({ commessa }: Props) {
         </div>
       )}
 
-      {/* WF-07: change assignment in active statuses */}
+      {/* Change the assignees while the job is active */}
       {(commessa.stato === "assegnata" || commessa.stato === "in_lavorazione") && canAssegna && (
         <div>
           <Button variant="outline" onClick={() => setAssegnaOpen("modifica")}>
@@ -227,7 +227,7 @@ export function WorkflowActions({ commessa }: Props) {
         />
       )}
 
-      {/* WeTransfer replaces the email for heavy files (FILE-03): it only records an event.
+      {/* WeTransfer replaces the email for heavy files: it only records an event.
           Visible only in statuses that start a send (PDF / colour proof / press proof). */}
       {canEdit
         && (commessa.stato === "in_lavorazione" || commessa.stato === "in_attesa_prova_colore")

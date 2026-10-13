@@ -2,7 +2,7 @@
 -- 0004_fix_grafico_force_spedito.sql
 -- Blocks the case: assigned designer -> override/mark "shipped".
 --
--- Rule v0.4:
+-- The rule:
 -- - an assigned designer can work on the job and override intermediate steps;
 -- - "Shipped" is reserved to Quality Control and full-access roles.
 -- =============================================================
@@ -28,7 +28,7 @@ security definer
 set search_path = public
 as $$
 begin
-  -- WF-26: only QC and full-access roles can mark a job "shipped".
+  -- Only QC and full-access roles can mark a job "shipped".
   -- RLS decides who can update the row; this blocks the case
   -- assigned designer -> shipped, which would otherwise pass via can_edit_workflow.
   if auth.uid() is not null
@@ -39,7 +39,7 @@ begin
     raise exception 'Only Quality Control or full-access roles can mark a job as Shipped.';
   end if;
 
-  -- WF-26: Quality Control can only move the job to "shipped".
+  -- Quality Control can only move the job to "shipped".
   -- The technical update of `spedita_il` and `aggiornata_il` is allowed too.
   if app_private.current_user_role() = 'controllo_qualita'
      and not app_private.is_full_access()
@@ -54,7 +54,7 @@ begin
     end if;
   end if;
 
-  -- WF-05: a job can be claimed only once, and only in your own name.
+  -- A job can be claimed only once, and only in your own name.
   if new.presa_in_carico_da_user_id is distinct from old.presa_in_carico_da_user_id then
     if old.presa_in_carico_da_user_id is not null then
       raise exception 'The job has already been claimed.';
@@ -68,7 +68,7 @@ begin
     new.presa_in_carico_il := coalesce(new.presa_in_carico_il, now());
   end if;
 
-  -- WF-27 / retention: when a job becomes "shipped", the DB sets the date.
+  -- Retention anchor: when a job becomes "shipped", the DB sets the date.
   if old.stato is distinct from 'spedito'::public.stato_commessa
      and new.stato = 'spedito'::public.stato_commessa then
     new.spedita_il := coalesce(new.spedita_il, now());

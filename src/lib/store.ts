@@ -1,9 +1,7 @@
-// =============================================================
 // Stores — in-memory UI cache
 //
 // The source of truth is the database. These stores only keep what was
 // loaded from it, so React components stay simple.
-// =============================================================
 
 import { create } from "zustand";
 
@@ -39,9 +37,7 @@ import {
 const uid = (): string => crypto.randomUUID();
 const nowIso = (): string => new Date().toISOString();
 
-// =============================================================
 // SESSION (Supabase Auth + current application user)
-// =============================================================
 // Inactivity timeout (security requirements): 7 days, so users don't have to
 // log in again every morning. It only counts while the tab is open.
 const INACTIVITY_LIMIT_MS = 7 * 24 * 60 * 60 * 1000;
@@ -114,9 +110,7 @@ export const INACTIVITY = {
   WARNING_MS: INACTIVITY_WARNING_MS,
 };
 
-// =============================================================
 // USERS
-// =============================================================
 interface UsersState {
   users: User[];
   setUsers: (u: User[]) => void;
@@ -129,9 +123,7 @@ export const useUsersStore = create<UsersState>()((set) => ({
     set((s) => ({ users: s.users.map((u) => (u.id === id ? { ...u, ...patch } : u)) })),
 }));
 
-// =============================================================
 // PREPRESS TEAMS (gruppi)
-// =============================================================
 interface GruppiState {
   gruppi: GruppoPrestampa[];
   setGruppi: (gruppi: GruppoPrestampa[]) => void;
@@ -141,9 +133,7 @@ export const useGruppiStore = create<GruppiState>()((set) => ({
   setGruppi: (gruppi) => set({ gruppi }),
 }));
 
-// =============================================================
 // USER ↔ TEAM (utente_gruppi)
-// =============================================================
 interface UtenteGruppiState {
   utenteGruppi: UtenteGruppo[];
   setUtenteGruppi: (rows: UtenteGruppo[]) => void;
@@ -165,9 +155,7 @@ export const useUtenteGruppiStore = create<UtenteGruppiState>()((set) => ({
     })),
 }));
 
-// =============================================================
 // CUSTOMERS (clienti)
-// =============================================================
 interface ClientiState {
   clienti: Cliente[];
   setClienti: (clienti: Cliente[]) => void;
@@ -191,9 +179,7 @@ export const useClientiStore = create<ClientiState>()((set, get) => ({
   },
 }));
 
-// =============================================================
 // JOBS (commesse)
-// =============================================================
 interface CommesseState {
   commesse: Commessa[];
   setCommesse: (commesse: Commessa[]) => void;
@@ -224,9 +210,7 @@ export const useCommesseStore = create<CommesseState>()((set) => ({
     }),
 }));
 
-// =============================================================
 // ASSIGNEES (assegnatari)
-// =============================================================
 interface AssegnatariState {
   assegnatari: CommessaAssegnatario[];
   setAssegnatariRows: (rows: CommessaAssegnatario[]) => void;
@@ -266,9 +250,7 @@ export const useAssegnatariStore = create<AssegnatariState>()((set) => ({
     }),
 }));
 
-// =============================================================
 // EVENTS (eventi)
-// =============================================================
 interface EventiState {
   eventi: Evento[];
   setEventi: (eventi: Evento[]) => void;
@@ -285,9 +267,7 @@ export const useEventiStore = create<EventiState>()((set) => ({
   },
 }));
 
-// =============================================================
 // SENT EMAILS
-// =============================================================
 interface EmailState {
   emailInviate: EmailInviata[];
   setEmailInviate: (rows: EmailInviata[]) => void;
@@ -297,9 +277,7 @@ export const useEmailStore = create<EmailState>()((set) => ({
   setEmailInviate: (emailInviate) => set({ emailInviate }),
 }));
 
-// =============================================================
 // FILES
-// =============================================================
 interface FileState {
   files: FileCommessa[];
   setFiles: (files: FileCommessa[]) => void;
@@ -329,9 +307,7 @@ export const useFileStore = create<FileState>()((set, get) => ({
   },
 }));
 
-// =============================================================
 // CORRECTIONS (correzioni)
-// =============================================================
 interface CorrezioniState {
   correzioni: Correzione[];
   setCorrezioni: (rows: Correzione[]) => void;
@@ -348,9 +324,7 @@ export const useCorrezioniStore = create<CorrezioniState>()((set) => ({
   },
 }));
 
-// =============================================================
 // OVERRIDE NOTES (note_forzatura)
-// =============================================================
 interface NoteForzaturaState {
   noteForzatura: NotaForzatura[];
   setNoteForzatura: (rows: NotaForzatura[]) => void;
@@ -367,9 +341,7 @@ export const useNoteForzaturaStore = create<NoteForzaturaState>()((set) => ({
   },
 }));
 
-// =============================================================
 // HOLDS (sospensioni)
-// =============================================================
 interface SospensioniState {
   sospensioni: Sospensione[];
   setSospensioni: (rows: Sospensione[]) => void;
@@ -397,9 +369,7 @@ export const useSospensioniStore = create<SospensioniState>()((set) => ({
     }),
 }));
 
-// =============================================================
 // TEMPLATES
-// =============================================================
 interface TemplatesState {
   templates: EmailTemplate[];
   setTemplates: (rows: EmailTemplate[]) => void;
@@ -416,9 +386,7 @@ export const useTemplatesStore = create<TemplatesState>()((set) => ({
     })),
 }));
 
-// =============================================================
 // Composite hooks
-// =============================================================
 
 export function useCurrentUser(): User | null {
   const id = useSessionStore((s) => s.currentUserId);
@@ -431,9 +399,7 @@ export function useCurrentSession(): Session | null {
   return u ? { userId: u.id, role: u.ruolo } : null;
 }
 
-// =============================================================
 // High-level local actions
-// =============================================================
 
 interface TransitionParams {
   commessaId: string;

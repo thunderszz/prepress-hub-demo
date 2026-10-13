@@ -47,8 +47,8 @@ export default function ClienteDetail() {
       </div>
     );
 
-  // CLI-04: the customer record is editable by full-access roles
-  // (in particular the email used as recipient in the wizard §5.6).
+  // Full-access roles can edit the customer record, in particular the
+  // email the send wizard uses as recipient.
   const canEdit = !!session && isFullAccess(session.role);
   // MANUAL-MODE: the name can only be fixed while customers are created by hand.
   const canRename = !!session && canRenameCliente(session);

@@ -28,7 +28,7 @@ describe("utentiAssegnabili", () => {
     { userId: "g3", gruppoId: "studio-e" },
   ];
 
-  it("§4.3: a Design Team Lead who belongs to a team can be assigned like a designer", () => {
+  it("a Design Team Lead who belongs to a team can be assigned like a designer", () => {
     expect(utentiAssegnabili(users, memberships).map((u) => u.nome)).toContain("Marco B.");
   });
 

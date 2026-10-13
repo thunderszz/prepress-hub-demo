@@ -15,9 +15,7 @@ import { CommessaRowCompact } from "@/components/CommessaRow";
 import { useAllActiveAlerts, AlertItem } from "@/lib/alerts";
 import { fmtDateTime } from "@/lib/format";
 
-// ============================================================
 // Hooks for handy lookup maps
-// ============================================================
 export function useClienteMap() {
   const clienti = useClientiStore((s) => s.clienti);
   return useMemo(() => new Map(clienti.map((c) => [c.id, c])), [clienti]);
@@ -41,9 +39,7 @@ export function useAlertsMap() {
   }, [all]);
 }
 
-// ============================================================
 // Calculation helpers
-// ============================================================
 export const isSpedito = (c: Commessa) => c.stato === "spedito";
 export const isSospesa = (c: Commessa) => !!c.sospensioneAttivaId;
 
@@ -68,9 +64,7 @@ export const inRitardo = (c: Commessa): boolean =>
 export const daAssegnare = (c: Commessa, assUserIdByCommessa: Map<string, number>): boolean =>
   c.stato === "disponibile" && (assUserIdByCommessa.get(c.id) ?? 0) === 0;
 
-// ============================================================
 // Reusable components
-// ============================================================
 export function DashHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
     <div className="flex items-center justify-between">
@@ -194,9 +188,7 @@ export function AlertList({ alerts }: { alerts: AlertItem[] }) {
   );
 }
 
-// ============================================================
 // Quick index: number of assignees per job
-// ============================================================
 export function useAssegnatariCount() {
   const ass = useAssegnatariStore((s) => s.assegnatari);
   return useMemo(() => {

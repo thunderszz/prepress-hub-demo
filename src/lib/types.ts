@@ -1,30 +1,22 @@
-// =============================================================
-// Domain types — Prepress Hub (PHASE 1)
+// Domain types.
 //
-// Principles:
-// - Status is the single source of truth (no stored `currentStep`).
-//   The metro stop is DERIVED via STEP_BY_STATO (see workflow.ts).
-// - Normalised model. No nested collections inside a job (Commessa).
-//   Child collections carry `commessaId` and map to Postgres tables
-//   with foreign keys.
-// - IDs are opaque UUIDs (crypto.randomUUID()). The only meaningful key
-//   is `numeroCommessa` (job number from the ERP), which is a FIELD, not
-//   the row id.
-// - Stable snake_case enums (matching the DB); display labels live in
-//   separate *_LABELS maps.
-// - Dates are ISO 8601 UTC (mapped to timestamptz).
+// - The job status is the single source of truth: the metro-map stop is
+//   derived from it (see workflow.ts), never stored.
+// - The model is normalised like the database: child rows carry
+//   `commessaId` instead of being nested inside the job.
+// - Ids are UUIDs. `numeroCommessa` (the ERP job number) is a field, not the id.
+// - Enum values are snake_case and match the database; display text lives
+//   in the *_LABELS maps.
+// - Dates are ISO 8601 strings in UTC.
 //
-// Note: identifiers keep the Italian domain vocabulary of the original
-// project (commessa = job, cliente = customer, grafico = designer, ...);
-// see the glossary in README.md.
-// =============================================================
+// Identifiers keep the Italian domain vocabulary of the original project
+// (commessa = job, cliente = customer, grafico = designer...); see the
+// glossary in README.md.
 
 export type UUID = string;
 export type ISODate = string;
 
-// -------------------------------------------------------------
-// Roles (§4.1) — the 6 real roles of the prepress department
-// -------------------------------------------------------------
+// Roles: the six roles of the prepress department.
 export const ROLES = [
   "responsabile_produzione",
   "responsabile_ufficio_grafico",
@@ -49,9 +41,7 @@ export const FULL_ACCESS_ROLES: readonly Role[] = [
   "responsabile_ufficio_grafico",
 ];
 
-// -------------------------------------------------------------
-// Job statuses (§5.14) — SINGLE source of truth for the workflow
-// -------------------------------------------------------------
+// Job statuses, in workflow order.
 export const STATI = [
   "disponibile",
   "assegnata",
@@ -75,9 +65,7 @@ export const STATO_LABELS: Record<StatoCommessa, string> = {
   spedito: "Shipped",
 };
 
-// -------------------------------------------------------------
-// Metro stops (8) — derived from the status in workflow.ts
-// -------------------------------------------------------------
+// Metro-map stops, derived from the status in workflow.ts.
 export const STEP_ORDER = [
   "pool",
   "assegnazione",
@@ -112,9 +100,7 @@ export const STEP_SHORT: Record<StepKey, string> = {
   spedizione: "Shipping",
 };
 
-// -------------------------------------------------------------
-// Outcomes
-// -------------------------------------------------------------
+// Outcomes of the colour proof and the press proof.
 export const ESITI_PROVA_COLORE = ["non_serve", "da_rifare", "spedita_approvata"] as const;
 export type EsitoProvaColore = (typeof ESITI_PROVA_COLORE)[number];
 export const ESITO_PROVA_COLORE_LABELS: Record<EsitoProvaColore, string> = {
@@ -130,9 +116,7 @@ export const ESITO_CADUTA_LABELS: Record<EsitoCaduta, string> = {
   da_rifare: "To be redone",
 };
 
-// -------------------------------------------------------------
-// On hold (§5.10)
-// -------------------------------------------------------------
+// Reasons a job can be put on hold.
 export const MOTIVI_SOSPENSIONE = [
   "cliente",
   "attesa_ordine",
@@ -149,9 +133,7 @@ export const MOTIVO_SOSPENSIONE_LABELS: Record<MotivoSospensione, string> = {
   altro: "Other",
 };
 
-// -------------------------------------------------------------
-// Events (history §13) — one per type, immutable (append-only)
-// -------------------------------------------------------------
+// History event types. Events are append-only.
 export const EVENTO_TIPI = [
   "sincronizzazione_erp",
   "aggiornamento_erp",
@@ -178,19 +160,15 @@ export const EVENTO_TIPI = [
   "nota_sottopassaggio",
   "email_inviata",
   "modifica_cliente",
-  "creazione_manuale", // MANUAL-MODE
+  "creazione_manuale", // MANUAL-MODE, see manualCommessa.ts
 ] as const;
 export type EventoTipo = (typeof EVENTO_TIPI)[number];
 
-// -------------------------------------------------------------
-// Files (§9)
-// -------------------------------------------------------------
+// Accepted job file formats.
 export const FILE_TIPI = ["PDF", "JPEG", "PNG"] as const;
 export type FileTipo = (typeof FILE_TIPI)[number];
 
-// -------------------------------------------------------------
-// Email (§11)
-// -------------------------------------------------------------
+// Customer emails.
 export const EMAIL_STATI = ["inviata", "errore"] as const;
 export type EmailStato = (typeof EMAIL_STATI)[number];
 
@@ -203,14 +181,10 @@ export const EMAIL_TEMPLATE_LABELS: Record<EmailTemplateKind, string> = {
   caduta: "Send press proof",
 };
 
-// -------------------------------------------------------------
-// Team mailboxes (the 5 fixed shared inboxes)
-// -------------------------------------------------------------
+// Domain of the shared team mailboxes.
 export const MAILBOX_DOMAIN = "acmeflexo.example";
 
-// =============================================================
-// Entities
-// =============================================================
+// Entities.
 
 export interface User {
   id: UUID;
@@ -249,7 +223,7 @@ export interface Cliente {
 export interface Commessa {
   id: UUID;
 
-  // ---- Fields synced from the ERP (§5.2) ----
+  // Fields synced from the ERP
   numeroCommessa: string;     // ERP key, immutable
   clienteId: UUID;
   stampatore?: string;        // printer (the customer's converter)
@@ -262,31 +236,31 @@ export interface Commessa {
   numeroOrdine?: string;
   operatoreRePro?: string;
 
-  // ---- Status (SINGLE source of truth for the metro stop) ----
+  // Status, the single source of truth for the workflow
   stato: StatoCommessa;
 
-  // ---- Current hold: pointer to the open row in `sospensioni` ----
+  // Current hold: the open row in `sospensioni`, if any
   sospensioneAttivaId?: UUID;
 
-  // ---- Workflow / outcomes ----
+  // Workflow / outcomes
   presaInCaricoDaUserId?: UUID;
   presaInCaricoIl?: ISODate;
   revisioniPdf: number;
   esitoProvaColore?: EsitoProvaColore;
   esitoCaduta?: EsitoCaduta;
 
-  // ---- Local data ----
-  dataConsegnaPrevista?: ISODate;  // ALR-03
-  terminePrimoPdf?: ISODate;        // ALR-05 (usually +48h from assignment)
+  // Local data
+  dataConsegnaPrevista?: ISODate;  // alert ALR-03 when passed
+  terminePrimoPdf?: ISODate;        // alert ALR-05 when passed; usually 48h after assignment
   noteInterne?: string;
 
-  // ---- Shipping: anchor for the 30-day file retention (DB: spedita_il) ----
+  // Shipping: anchor for the 30-day file retention (DB: spedita_il)
   speditaIl?: ISODate;     // exact time it moved to "shipped" (≠ aggiornataIl)
 
-  // ---- Meta ----
+  // Meta
   creataIl: ISODate;       // received from the ERP
   aggiornataIl: ISODate;
-  annullataIl?: ISODate;   // SYN-05: never deleted, only flagged + event
+  annullataIl?: ISODate;   // jobs cancelled in the ERP are flagged, never deleted
 }
 
 /** Join table commessa_assegnatari (M:N). */
@@ -297,7 +271,7 @@ export interface CommessaAssegnatario {
   assegnatoDaUserId: UUID;
 }
 
-/** Hold history (§5.10): it can happen more than once. */
+/** One hold period; a job can be put on hold more than once. */
 export interface Sospensione {
   id: UUID;
   commessaId: UUID;
@@ -309,7 +283,7 @@ export interface Sospensione {
   chiusaDaUserId?: UUID;
 }
 
-/** History (§13) — append-only, immutable. */
+/** One history entry. Append-only. */
 export interface Evento {
   id: UUID;
   commessaId: UUID;
@@ -323,7 +297,7 @@ export interface Evento {
   refId?: UUID;
 }
 
-/** Permanent archive of email metadata/text; the attached PDF binary is subject to retention (MAIL-06). */
+/** A sent (or failed) email, archived permanently; its attachment expires with file retention. */
 export interface EmailInviata {
   id: UUID;
   commessaId: UUID;
@@ -336,13 +310,13 @@ export interface EmailInviata {
   oggetto: string;
   corpo: string;
   allegatoNome?: string;     // name of the attached PDF
-  /** false once the attachment binary has expired (retention, MAIL-06). */
+  /** false once the attachment has expired (file retention). */
   allegatoDisponibile?: boolean;
   inviataDaUserId?: UUID;
   stato: EmailStato;
 }
 
-/** File metadata (§9). The binary lives in storage; only metadata here. */
+/** File metadata; the binary lives in storage. */
 export interface FileCommessa {
   id: UUID;
   commessaId: UUID;
@@ -357,7 +331,7 @@ export interface FileCommessa {
   storagePath?: string | null;
 }
 
-/** Correction minutes (option B §10): only tracked for ALR-01. */
+/** Minutes spent on corrections; their total drives alert ALR-01. */
 export interface Correzione {
   id: UUID;
   commessaId: UUID;
@@ -367,7 +341,7 @@ export interface Correzione {
   nota?: string;
 }
 
-/** Override notes (§5): mandatory whenever a step is skipped. */
+/** The mandatory note written when a workflow step is skipped. */
 export interface NotaForzatura {
   id: UUID;
   commessaId: UUID;
@@ -380,7 +354,7 @@ export interface NotaForzatura {
   userId: UUID;
 }
 
-/** Email templates (§5.7, §11). Empty at first (MAIL-03). */
+/** A customer email template, with {job_number}-style variables. */
 export interface EmailTemplate {
   id: UUID;
   kind: EmailTemplateKind;

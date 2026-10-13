@@ -1,4 +1,3 @@
-// =============================================================
 // Mock backend (portfolio demo only)
 //
 // Replaces the Supabase client with an in-memory database exposing the
@@ -12,7 +11,6 @@
 // Data lives in the browser's localStorage: it can be changed freely and
 // "Reset demo data" brings everything back to the initial state.
 // No network calls.
-// =============================================================
 
 import { jsPDF } from "jspdf";
 import type { Database } from "../database.types";
@@ -32,9 +30,7 @@ export interface MockError {
 const DB_KEY = "prepress-hub-demo:db:v4";
 const SESSION_KEY = "prepress-hub-demo:session:v2";
 
-// ---------------------------------------------------------------
 // Persistence
-// ---------------------------------------------------------------
 function safeStorage(): Storage | null {
   try {
     return typeof window !== "undefined" ? window.localStorage : null;
@@ -120,9 +116,7 @@ function violatesUnique(table: TableName, row: AnyRow, ignoreRef?: AnyRow): bool
   );
 }
 
-// ---------------------------------------------------------------
 // Query builder (thenable, like PostgrestBuilder)
-// ---------------------------------------------------------------
 type Op =
   | { kind: "select" }
   | { kind: "insert"; values: AnyRow[] }
@@ -266,9 +260,7 @@ class QueryBuilder<T extends TableName, D = Row<T>[]> implements PromiseLike<Res
   }
 }
 
-// ---------------------------------------------------------------
 // Auth
-// ---------------------------------------------------------------
 type AuthEvent = "INITIAL_SESSION" | "SIGNED_IN" | "SIGNED_OUT" | "TOKEN_REFRESHED";
 interface MockSession {
   user: { id: string; email: string };
@@ -337,9 +329,7 @@ const auth = {
   },
 };
 
-// ---------------------------------------------------------------
 // Simulated Edge Functions
-// ---------------------------------------------------------------
 function initialsFor(nome: string) {
   return nome.split(/\s+/).filter(Boolean).map((p) => p[0]!.toUpperCase()).slice(0, 2).join("") || "UT";
 }
@@ -353,7 +343,7 @@ const functions = {
 
     if (name === "send-email") {
       const destinatari = body.destinatari as string[];
-      // To show error handling (MAIL-07): an address containing
+      // To show error handling: an address containing
       // "error" simulates a rejection by the provider.
       const fallita = destinatari.some((d) => d.toLowerCase().includes("error"));
       const allegato = body.allegatoFileId
@@ -412,10 +402,8 @@ const functions = {
   },
 };
 
-// ---------------------------------------------------------------
 // Storage: uploaded binaries stay in memory for the session;
 // seeded files generate a placeholder preview on the fly.
-// ---------------------------------------------------------------
 const blobs = new Map<string, Blob>();
 
 function placeholderBlob(path: string, nome: string): Blob {
@@ -478,9 +466,7 @@ const storage = {
   },
 };
 
-// ---------------------------------------------------------------
 // Realtime: the demo has one user at a time, no channels needed.
-// ---------------------------------------------------------------
 function channel(_name: string) {
   const ch = {
     on: (..._args: unknown[]) => ch,

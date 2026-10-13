@@ -202,7 +202,7 @@ export default function Commesse() {
           ) : (
             user && userGruppiIds.length > 0 && (
               <div className="text-[11px] text-muted-foreground">
-                Visibility: all jobs (§4.6)
+                Visibility: all jobs
               </div>
             )
           )}

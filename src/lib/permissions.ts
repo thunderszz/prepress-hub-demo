@@ -1,15 +1,13 @@
-// =============================================================
-// Permissions — RLS-mappable (PHASE 1)
+// Permissions.
 //
-// Every canX(session, row, joins) function must be expressible as a
-// SQL condition on the row (so it can become an RLS policy):
+// Every canX(session, row, joins) check uses only what an RLS policy can
+// see, so each one has a twin in supabase/migrations:
 //   - the user's role
 //   - membership in `commessa_assegnatari (commessa_id, user_id)`
-//   - flags/status on the row (e.g. `presaInCaricoDaUserId`)
+//   - flags and status on the row (e.g. `presaInCaricoDaUserId`)
 //
-// Job visibility (§4.6) is "everyone sees everything": designers get
-// quick FILTERS in the UI, not an RLS filter.
-// =============================================================
+// Everyone can see every job; designers get quick filters in the UI
+// instead of a row filter.
 
 import {
   Commessa,
@@ -25,9 +23,7 @@ export interface Session {
   role: Role;
 }
 
-// -------------------------------------------------------------
 // Basic helpers
-// -------------------------------------------------------------
 export const isFullAccess = (role: Role): boolean => FULL_ACCESS_ROLES.includes(role);
 
 export const isAssegnato = (
@@ -36,12 +32,7 @@ export const isAssegnato = (
   userId: string,
 ): boolean => ass.some((a) => a.commessaId === commessaId && a.userId === userId);
 
-// -------------------------------------------------------------
 // Job permissions
-// -------------------------------------------------------------
-
-/** §4.6: everyone sees every job. */
-export const canSeeAllCommesse = (_s: Session): boolean => true;
 
 /**
  * Claims a job.
@@ -80,7 +71,7 @@ export const canAddNotaSottopassaggio = canEditWorkflow;
 export const canAssegnare = (s: Session): boolean => isFullAccess(s.role);
 
 /**
- * Who can receive a job (§4.3, WF-03): active designers and anyone who,
+ * Who can be assigned a job: active designers, and anyone who,
  * despite another role, belongs to a prepress team — the Design Team
  * Lead sits in studio-e and is assigned like a designer. The DB puts
  * no constraint on the assignee's role.
@@ -101,39 +92,34 @@ export const canMarkShipped = (s: Session): boolean =>
 export const canForzaturaStep = canEditWorkflow;
 
 /**
- * Direct override to "Shipped" (shortcut). Aligned with who can mark a
- * job shipped: QC + full access. NB: distinct from canForzaturaStep — QC
- * can use "Force shipped…" but not "Override step…".
+ * Direct override to "Shipped". Same people who can mark a job shipped:
+ * QC and full access. Unlike canForzaturaStep, so QC can use "Force
+ * shipped…" but not "Override step…".
  */
 export const canForzaturaSpedito = canMarkShipped;
 
-// MANUAL-MODE: §16/SYN-01 forbid manual creation because jobs are born
-// in the ERP, but the ERP API is not available yet and the portal must be
-// testable. Full access only, like `canEditCliente`: read-only roles
-// never create anything (same line as migration 0005).
+// MANUAL-MODE: jobs are meant to come from the ERP sync, which does not
+// exist yet, so full-access users can create them by hand. Read-only
+// roles never create anything (same rule as migration 0005).
 // Set back to `false` once the ERP sync is live.
 export const canCreateCommessa = (s: Session): boolean => isFullAccess(s.role);
 
-// MANUAL-MODE: CLI-01 wants customers created by the ERP sync only.
-// Until then, full-access users create them from the Customers page and
-// can fix their name (a typo would otherwise stay forever). With the sync
-// the name becomes the ERP one again — the key used to recognise the
-// customer: set both back to `false`.
+// MANUAL-MODE: customers are meant to come from the ERP sync too. Until
+// then, full-access users create them from the Customers page and can fix
+// their name (a typo would otherwise stay forever). With the sync the ERP
+// name, which is how a customer is recognised, wins again: set both back
+// to `false`.
 export const canCreateCliente = (s: Session): boolean => isFullAccess(s.role);
 export const canRenameCliente = (s: Session): boolean => isFullAccess(s.role);
 
-// -------------------------------------------------------------
 // Customers and settings
-// -------------------------------------------------------------
 export const canEditCliente = (s: Session): boolean => isFullAccess(s.role);
 export const canManageUsers = (s: Session): boolean => isFullAccess(s.role);
 export const canManageGruppi = (s: Session): boolean => isFullAccess(s.role);
 export const canManageTemplates = (s: Session): boolean => isFullAccess(s.role);
 export const canManageMailboxes = (s: Session): boolean => isFullAccess(s.role);
 
-// -------------------------------------------------------------
 // Navigation by role (sidebar)
-// -------------------------------------------------------------
 export type NavKey =
   | "dashboard"
   | "commesse"

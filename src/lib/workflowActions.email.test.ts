@@ -116,7 +116,7 @@ describe("inviaEmail — real send through the Edge Function", () => {
     expect(flushPendingWritesMock).toHaveBeenCalledTimes(1);
   });
 
-  it("archived error (MAIL-07): ok:false with emailId, 'send error' event, status NOT advanced", async () => {
+  it("archived error: ok:false with emailId, 'send error' event, status NOT advanced", async () => {
     sendEmailViaFunctionMock.mockResolvedValue({
       sent: false,
       reason: "Provider 500: boom.",

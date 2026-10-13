@@ -12,7 +12,7 @@
 --   others      = responsabile_commerciale, amministrazione,
 --                 controllo_qualita, grafico
 --
--- Principle §4.6: everyone sees every job → SELECT open to every
+-- Everyone sees every job → SELECT open to every
 -- authenticated user. Per-role filters are UI only.
 --
 -- NB: calls with the service_role key (Edge Functions, cron jobs,
@@ -154,7 +154,7 @@ create policy clienti_write on public.clienti
 
 -- =============================================================
 -- JOBS (commesse)
--- SELECT: everyone (§4.6).
+-- SELECT: everyone.
 -- INSERT: SERVER-ONLY (canCreateCommessa = false; jobs come from the ERP).
 -- UPDATE: whoever can work on the job OR whoever can mark it shipped.
 -- DELETE: never (the annullata_il flag is used, SERVER-ONLY).
@@ -187,7 +187,7 @@ create policy assegnatari_write on public.commessa_assegnatari
   with check (app_private.is_full_access());
 
 -- =============================================================
--- EVENTS (immutable history, LOG-02)
+-- EVENTS (immutable history)
 -- SELECT: everyone.
 -- INSERT (DECISION B — collaborative notes, to confirm with the customer):
 --   * type 'nota_interna' → ANY authenticated user (read-only roles
@@ -196,7 +196,7 @@ create policy assegnatari_write on public.commessa_assegnatari
 --   * any other type → whoever can work on the job (full access /
 --     assigned designer).
 --   In every case user_id = current user (no spoofing).
--- UPDATE/DELETE: never (immutable, LOG-02).
+-- UPDATE/DELETE: never (immutable).
 -- NB cleaner target (v2): non-note events should be written by
 --    server-side TRIGGERS on the source tables, not by the client.
 -- =============================================================

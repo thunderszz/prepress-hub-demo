@@ -1,15 +1,13 @@
 // =============================================================
-// Edge Function send-email — real outbound sending through SendGrid (§11)
+// Edge Function send-email: sends customer emails through SendGrid.
 //
-// MAIL-01 sending at the 3 key steps (pdf | prova_colore | caduta)
-// MAIL-02 SendGrid, sender = prepress team mailbox
-// MAIL-04 explicit confirmation happens in the frontend wizard
-// MAIL-05 reply-to = sender team mailbox
-// MAIL-06 permanent archive in email_inviate (server-side insert:
-//         the table has no INSERT policy by design)
-// MAIL-07 error outcome archived with status 'errore' + retry from the wizard
-// CC      optional carbon copy, pasted for each send and
-//         archived in email_inviate.cc
+// - Used at the three steps that need the customer: PDF, colour proof, press proof.
+// - The sender is the prepress team's mailbox, which is also the reply-to.
+// - The user confirms explicitly in the frontend wizard before this runs.
+// - Every email is archived in email_inviate, from here only: the table
+//   has no INSERT policy by design.
+// - A failed send is archived too, with status 'errore', so the wizard can retry.
+// - CC is optional, pasted for each send, and archived in email_inviate.cc.
 //
 // Security: JWT verified by the platform (verify_jwt), app permission
 // through the can_edit_commessa RPC run in the caller's context;
@@ -34,7 +32,7 @@ const FILES_BUCKET = "commessa-files";
 const MAX_ATTACHMENT_BYTES = 20 * 1024 * 1024;
 // CC cap: generous for real use, but prevents mass mailing from team mailboxes.
 const MAX_CC = 50;
-// Attachable types are the same the portal accepts on upload (FILE-01):
+// Attachable types are the same the portal accepts on upload:
 // the PDF, but also the JPEG/PNG photo of the colour proof.
 const ATTACHMENT_MIME: Record<string, string> = {
   PDF: "application/pdf",
@@ -129,7 +127,7 @@ Deno.serve(async (req) => {
 
   const admin = createClient(supabaseUrl, serviceKey);
 
-  // --- Sender: must be a registered team mailbox (MAIL-02) ---
+  // --- Sender: must be a registered team mailbox ---
   const mittente = p.mittente.trim();
   const { data: gruppo } = await admin
     .from("gruppi_prestampa").select("id").eq("mailbox", mittente).maybeSingle();
@@ -220,7 +218,7 @@ Deno.serve(async (req) => {
     }
   }
 
-  // --- Permanent archive (MAIL-06), even on error (MAIL-07) ---
+  // --- Permanent archive, failed sends included ---
   const stato = sendOk ? "inviata" : "errore";
   const { data: emailRow, error: insError } = await admin
     .from("email_inviate")

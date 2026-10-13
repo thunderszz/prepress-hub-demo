@@ -255,9 +255,7 @@ export function AppLayout() {
   );
 }
 
-// ============================================================
 // Global search (jobs)
-// ============================================================
 function GlobalSearch() {
   const navigate = useNavigate();
   const [q, setQ] = useState("");
@@ -339,9 +337,7 @@ function GlobalSearch() {
   );
 }
 
-// ============================================================
 // Notification bell (active alerts)
-// ============================================================
 function NotificationsBell() {
   const alerts = useAllActiveAlerts();
   const commesse = useCommesseStore((s) => s.commesse);

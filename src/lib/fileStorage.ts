@@ -1,10 +1,7 @@
-// =============================================================
-// Job file storage (§9) — binaries in Supabase Storage.
-// Private bucket "commessa-files"; path: <commessa_id>/<sanitised-name>.
-// Same name → same path → overwrite (FILE-02).
-// Metadata stays in file_commessa (storage_path); retention is
-// server-side (migrations 0009/0010).
-// =============================================================
+// Job files. Binaries go to the private "commessa-files" bucket at
+// <commessa_id>/<sanitised-name>, so uploading the same name again replaces
+// the file. Metadata lives in file_commessa; retention runs server-side
+// (migrations 0009 and 0010).
 
 import { supabase } from "./supabase";
 import { uploadFile } from "./workflowActions";

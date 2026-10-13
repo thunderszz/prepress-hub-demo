@@ -54,7 +54,7 @@ describe("sendEmailViaFunction", () => {
     }));
   });
 
-  it("failed but archived send (MAIL-07): returns the row with error status", async () => {
+  it("failed but archived send: returns the row with error status", async () => {
     invokeMock.mockResolvedValue({
       data: {
         ok: false,

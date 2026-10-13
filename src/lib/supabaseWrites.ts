@@ -38,7 +38,7 @@ export async function flushPendingWrites(): Promise<void> {
   await Promise.all(batch);
 }
 
-// Customer record (CLI-04): only the hand-editable fields.
+// Customer record: only the fields edited by hand.
 // Explicit `field: undefined` = cleared → null in the DB.
 export function persistClientePatch(id: string, patch: Partial<Cliente>) {
   const row: Database["public"]["Tables"]["clienti"]["Update"] = {};

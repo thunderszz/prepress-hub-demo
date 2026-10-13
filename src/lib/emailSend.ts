@@ -1,12 +1,9 @@
-// =============================================================
-// Real email sending (§11) — bridge to the send-email Edge Function.
+// Sending customer emails through the send-email Edge Function.
 //
-// The actual send (email provider) and the permanent archive in
-// email_inviate (MAIL-06) happen ONLY server-side: the table has no
-// INSERT policy and the provider API key lives in the function's
-// secrets. Here we invoke the function and normalise the outcome.
-// (In this demo the function is simulated by the mock client.)
-// =============================================================
+// The send and the permanent archive in email_inviate happen only
+// server-side: the table has no INSERT policy, and the email provider's key
+// lives in the function's secrets. This module calls the function and
+// normalises the outcome. In the demo the mock client plays the function.
 
 import { supabase } from "./supabase";
 import { mapEmail } from "./supabaseData";
@@ -29,14 +26,12 @@ export interface SendEmailRequest {
   allegatoNome?: string;
 }
 
-// Flat interface (not a discriminated union): with strict=false narrowing
-// on `sent` doesn't work and would force casts at call sites.
 export interface SendEmailOutcome {
   /** true = sent and archived. */
   sent: boolean;
   /** Failure reason when sent=false. */
   reason?: string;
-  /** Archived row (even with status 'errore', MAIL-07); missing if rejected earlier. */
+  /** The archived row, also for a failed send; missing if rejected before archiving. */
   email?: EmailInviata;
 }
 

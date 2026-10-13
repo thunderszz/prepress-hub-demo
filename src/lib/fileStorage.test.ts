@@ -49,7 +49,7 @@ describe("storagePathForFile", () => {
     expect(path.startsWith(`${COMMESSA_ID}/`)).toBe(true);
   });
 
-  it("is deterministic: same name → same path (FILE-02 overwrite)", () => {
+  it("is deterministic: same name → same path, so a re-upload overwrites", () => {
     expect(storagePathForFile(COMMESSA_ID, "etichetta vino.pdf")).toBe(
       storagePathForFile(COMMESSA_ID, "etichetta vino.pdf"),
     );
@@ -96,7 +96,7 @@ describe("uploadCommessaFile", () => {
     expect(useEventiStore.getState().eventi).toHaveLength(0);
   });
 
-  it("rejects formats not allowed (PDF/JPEG/PNG only, §9)", async () => {
+  it("rejects formats other than PDF, JPEG and PNG", async () => {
     const res = await uploadCommessaFile(COMMESSA_ID, USER_ID, makeFile("x.gif", "image/gif"));
     expect(res.ok).toBe(false);
     expect(uploadMock).not.toHaveBeenCalled();

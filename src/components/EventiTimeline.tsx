@@ -145,7 +145,7 @@ export function EventiTimeline({ commessaId }: Props) {
           <div className="space-y-2">
             <div className="text-[12px] text-muted-foreground">
               Handover note
-              <span className="ml-1 text-[11px] opacity-70">(when another designer takes over, WF-25)</span>
+              <span className="ml-1 text-[11px] opacity-70">(when another designer takes over)</span>
             </div>
             <Textarea
               value={notaSp}
