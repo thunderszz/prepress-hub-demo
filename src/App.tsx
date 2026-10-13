@@ -1,8 +1,5 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppLayout } from "@/components/AppLayout";
 import Dashboard from "./pages/Dashboard";
 import Commesse from "./pages/Commesse";
@@ -21,33 +18,28 @@ import { loadAppData, subscribeToRealtime } from "@/lib/supabaseData";
 import { isDemoMode } from "@/lib/supabaseWrites";
 import { useSessionStore } from "@/lib/store";
 
-const queryClient = new QueryClient();
-
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <SupabaseBootstrap />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/logout" element={<Logout />} />
-          <Route element={<AppLayout />}>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/jobs" element={<Commesse />} />
-            <Route path="/jobs/:id" element={<CommessaDetail />} />
-            <Route path="/customers" element={<Clienti />} />
-            <Route path="/customers/:id" element={<ClienteDetail />} />
-            <Route path="/settings" element={<Configurazione />} />
-            <Route path="/profile" element={<Profilo />} />
-          </Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <>
+    <Toaster />
+    <SupabaseBootstrap />
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/logout" element={<Logout />} />
+        <Route element={<AppLayout />}>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/jobs" element={<Commesse />} />
+          <Route path="/jobs/:id" element={<CommessaDetail />} />
+          <Route path="/customers" element={<Clienti />} />
+          <Route path="/customers/:id" element={<ClienteDetail />} />
+          <Route path="/settings" element={<Configurazione />} />
+          <Route path="/profile" element={<Profilo />} />
+        </Route>
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </BrowserRouter>
+  </>
 );
 
 export default App;
