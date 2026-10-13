@@ -47,7 +47,7 @@ describe("persistClientePatch", () => {
 
   it("persists customer email, phone and notes (CLI-04)", async () => {
     persistClientePatch("cliente-1", {
-      email: "cliente@esempio.it",
+      email: "customer@example.com",
       telefono: "0421 123456",
       note: "referente: Mario",
     });
@@ -55,7 +55,7 @@ describe("persistClientePatch", () => {
 
     expect(from).toHaveBeenCalledWith("clienti");
     expect(update).toHaveBeenCalledWith({
-      email: "cliente@esempio.it",
+      email: "customer@example.com",
       telefono: "0421 123456",
       note: "referente: Mario",
     });

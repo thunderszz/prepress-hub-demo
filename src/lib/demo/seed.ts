@@ -24,18 +24,18 @@ export const DEMO_DOMAIN = "acmeflexo.example";
 // ---------------------------------------------------------------
 type Ruolo = Row<"utenti">["ruolo"];
 const PERSONE: Array<{ nome: string; user: string; ruolo: Ruolo; gruppi: string[] }> = [
-  { nome: "Giulia Ferri", user: "giulia.ferri", ruolo: "responsabile_produzione", gruppi: ["prestampa01"] },
-  { nome: "Marco Bellini", user: "marco.bellini", ruolo: "responsabile_ufficio_grafico", gruppi: ["prestampa05"] },
+  { nome: "Giulia Ferri", user: "giulia.ferri", ruolo: "responsabile_produzione", gruppi: ["studio-a"] },
+  { nome: "Marco Bellini", user: "marco.bellini", ruolo: "responsabile_ufficio_grafico", gruppi: ["studio-e"] },
   { nome: "Sara Conti", user: "sara.conti", ruolo: "responsabile_commerciale", gruppi: [] },
   { nome: "Paolo Greco", user: "paolo.greco", ruolo: "amministrazione", gruppi: [] },
   { nome: "Elena Riva", user: "elena.riva", ruolo: "controllo_qualita", gruppi: [] },
-  { nome: "Luca Moretti", user: "luca.moretti", ruolo: "grafico", gruppi: ["prestampa01"] },
-  { nome: "Chiara Galli", user: "chiara.galli", ruolo: "grafico", gruppi: ["prestampa01"] },
-  { nome: "Matteo Russo", user: "matteo.russo", ruolo: "grafico", gruppi: ["prestampa02"] },
-  { nome: "Anna Costa", user: "anna.costa", ruolo: "grafico", gruppi: ["prestampa02"] },
-  { nome: "Federico Leone", user: "federico.leone", ruolo: "grafico", gruppi: ["prestampa03"] },
-  { nome: "Irene Marchi", user: "irene.marchi", ruolo: "grafico", gruppi: ["prestampa03", "prestampa05"] },
-  { nome: "Tommaso Villa", user: "tommaso.villa", ruolo: "grafico", gruppi: ["prestampa04"] },
+  { nome: "Luca Moretti", user: "luca.moretti", ruolo: "grafico", gruppi: ["studio-a"] },
+  { nome: "Chiara Galli", user: "chiara.galli", ruolo: "grafico", gruppi: ["studio-a"] },
+  { nome: "Matteo Russo", user: "matteo.russo", ruolo: "grafico", gruppi: ["studio-b"] },
+  { nome: "Anna Costa", user: "anna.costa", ruolo: "grafico", gruppi: ["studio-b"] },
+  { nome: "Federico Leone", user: "federico.leone", ruolo: "grafico", gruppi: ["studio-c"] },
+  { nome: "Irene Marchi", user: "irene.marchi", ruolo: "grafico", gruppi: ["studio-c", "studio-e"] },
+  { nome: "Tommaso Villa", user: "tommaso.villa", ruolo: "grafico", gruppi: ["studio-d"] },
 ];
 
 export const DEMO_USERS = PERSONE.map((p) => ({
@@ -48,20 +48,20 @@ export const DEMO_USERS = PERSONE.map((p) => ({
 // Customers (fictional)
 // ---------------------------------------------------------------
 const CLIENTI: Array<{ nome: string; email?: string; telefono?: string; note?: string }> = [
-  { nome: "Pastificio Aurora S.r.l.", email: "grafica@pastificioaurora.example", telefono: "+39 0000 100200", note: "PDF approvals come from the marketing department only." },
-  { nome: "Acque Minerali Monte Bianco S.p.A.", email: "packaging@montebianco.example", telefono: "+39 0000 300400" },
-  { nome: "Torrefazione Lido", email: "ordini@torrefazionelido.example" },
-  { nome: "Birrificio Valle Verde", email: "birra@valleverde.example", note: "Always requires a colour proof on coated paper." },
-  { nome: "Dolciaria Stella", email: "uff.acquisti@dolciariastella.example", telefono: "+39 0000 500600" },
-  { nome: "Latteria Sociale Prealpi", email: "qualita@latteriaprealpi.example" },
-  { nome: "PetFood Natura S.r.l.", email: "artwork@petfoodnatura.example" },
-  { nome: "Oleificio Colli Sereni" },
+  { nome: "Fabrikam Pasta Ltd", email: "artwork@fabrikampasta.example", telefono: "+39 0000 100200", note: "PDF approvals come from the marketing department only." },
+  { nome: "Contoso Waters Inc.", email: "packaging@contoso.example", telefono: "+39 0000 300400" },
+  { nome: "Fourth Coffee", email: "orders@fourthcoffee.example" },
+  { nome: "Tailspin Brewing Co.", email: "beer@tailspinbrewing.example", note: "Always requires a colour proof on coated paper." },
+  { nome: "Wingtip Confectionery", email: "purchasing@wingtipsweets.example", telefono: "+39 0000 500600" },
+  { nome: "Adventure Works Dairy", email: "quality@adventureworksdairy.example" },
+  { nome: "Litware Pet Food Ltd", email: "artwork@litwarepetfood.example" },
+  { nome: "Coho Olive Grove" },
 ];
 
 const STAMPATORI = [
-  { nome: "Flexoprint Nord", cod: "ST-014" },
-  { nome: "Etichettificio Delta", cod: "ST-027" },
-  { nome: "Imballaggi Riuniti", cod: "ST-031" },
+  { nome: "Northwind Converters", cod: "ST-014" },
+  { nome: "Proseware Labels", cod: "ST-027" },
+  { nome: "Wide World Packaging", cod: "ST-031" },
 ];
 
 // ---------------------------------------------------------------
@@ -181,8 +181,7 @@ export function buildSeed(nowMs = Date.now()): Seed {
 
   // users + teams
   const gruppoIds = new Map<string, string>();
-  for (let i = 1; i <= 5; i++) {
-    const nome = `prestampa0${i}`;
+  for (const nome of ["studio-a", "studio-b", "studio-c", "studio-d", "studio-e"]) {
     const id = uid();
     gruppoIds.set(nome, id);
     db.gruppi_prestampa.push({ id, nome, mailbox: `${nome}@${DEMO_DOMAIN}` });
@@ -206,7 +205,7 @@ export function buildSeed(nowMs = Date.now()): Seed {
   const grafici = db.utenti.filter((u) => u.ruolo === "grafico");
   const mailboxOf = (userId: string) => {
     const g = db.utente_gruppi.find((ug) => ug.utente_id === userId);
-    return db.gruppi_prestampa.find((x) => x.id === g?.gruppo_id)?.mailbox ?? `prestampa01@${DEMO_DOMAIN}`;
+    return db.gruppi_prestampa.find((x) => x.id === g?.gruppo_id)?.mailbox ?? `studio-a@${DEMO_DOMAIN}`;
   };
 
   // customers

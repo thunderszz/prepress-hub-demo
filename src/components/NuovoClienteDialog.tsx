@@ -86,7 +86,7 @@ export function NuovoClienteDialog({ open, onOpenChange, onCreated }: Props) {
               id="nuovo-cliente-nome"
               value={nome}
               onChange={(e) => setNome(e.target.value)}
-              placeholder="Pastificio Aurora S.r.l."
+              placeholder="Fabrikam Pasta Ltd"
               autoFocus
             />
           </Campo>
@@ -98,7 +98,7 @@ export function NuovoClienteDialog({ open, onOpenChange, onCreated }: Props) {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="orders@customer.com"
+                placeholder="orders@customer.example"
               />
               {email.trim() && !isValidEmail(email) && (
                 <p className="text-[11px] text-destructive">

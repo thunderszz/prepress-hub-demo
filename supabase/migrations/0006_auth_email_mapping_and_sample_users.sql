@@ -230,27 +230,27 @@ on conflict (email) do update set
 
 insert into public.gruppi_prestampa (id, nome, mailbox)
 values
-  (gen_random_uuid(), 'prestampa01', 'prestampa01@acmeflexo.example'),
-  (gen_random_uuid(), 'prestampa02', 'prestampa02@acmeflexo.example'),
-  (gen_random_uuid(), 'prestampa03', 'prestampa03@acmeflexo.example'),
-  (gen_random_uuid(), 'prestampa04', 'prestampa04@acmeflexo.example'),
-  (gen_random_uuid(), 'prestampa05', 'prestampa05@acmeflexo.example')
+  (gen_random_uuid(), 'studio-a', 'studio-a@acmeflexo.example'),
+  (gen_random_uuid(), 'studio-b', 'studio-b@acmeflexo.example'),
+  (gen_random_uuid(), 'studio-c', 'studio-c@acmeflexo.example'),
+  (gen_random_uuid(), 'studio-d', 'studio-d@acmeflexo.example'),
+  (gen_random_uuid(), 'studio-e', 'studio-e@acmeflexo.example')
 on conflict (nome) do update set mailbox = excluded.mailbox;
 
 insert into public.utente_gruppi (utente_id, gruppo_id)
 select u.id, g.id
 from (values
-  ('nicola.serra@acmeflexo.example', 'prestampa01'),
-  ('chiara.galli@acmeflexo.example', 'prestampa01'),
-  ('luca.moretti@acmeflexo.example', 'prestampa01'),
-  ('irene.marchi@acmeflexo.example', 'prestampa02'),
-  ('tommaso.villa@acmeflexo.example', 'prestampa02'),
-  ('matteo.russo@acmeflexo.example', 'prestampa03'),
-  ('alice.fontana@acmeflexo.example', 'prestampa03'),
-  ('marco.bellini@acmeflexo.example', 'prestampa05'),
-  ('anna.costa@acmeflexo.example', 'prestampa05'),
-  ('federico.leone@acmeflexo.example', 'prestampa05'),
-  ('matteo.russo@acmeflexo.example', 'prestampa05')
+  ('nicola.serra@acmeflexo.example', 'studio-a'),
+  ('chiara.galli@acmeflexo.example', 'studio-a'),
+  ('luca.moretti@acmeflexo.example', 'studio-a'),
+  ('irene.marchi@acmeflexo.example', 'studio-b'),
+  ('tommaso.villa@acmeflexo.example', 'studio-b'),
+  ('matteo.russo@acmeflexo.example', 'studio-c'),
+  ('alice.fontana@acmeflexo.example', 'studio-c'),
+  ('marco.bellini@acmeflexo.example', 'studio-e'),
+  ('anna.costa@acmeflexo.example', 'studio-e'),
+  ('federico.leone@acmeflexo.example', 'studio-e'),
+  ('matteo.russo@acmeflexo.example', 'studio-e')
 ) as m(email, gruppo)
 join public.utenti u on u.email = m.email
 join public.gruppi_prestampa g on g.nome = m.gruppo

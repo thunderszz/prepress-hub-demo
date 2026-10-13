@@ -21,7 +21,7 @@ export interface ParsedEmailList {
 }
 
 // Splits on , ; and newlines, but not inside "…" or <…>: Outlook pastes
-// `"Smith, John" <john@x.com>; Luke <luke@y.com>`.
+// `"Smith, John" <john@x.example>; Luke <luke@y.example>`.
 function splitSegments(text: string): string[] {
   const out: string[] = [];
   let cur = "";

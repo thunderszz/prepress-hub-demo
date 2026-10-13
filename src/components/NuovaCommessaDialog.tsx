@@ -203,7 +203,7 @@ export function NuovaCommessaDialog({ open, onOpenChange, onCreated }: Props) {
                 <Input
                   value={nuovoClienteNome}
                   onChange={(e) => setNuovoClienteNome(e.target.value)}
-                  placeholder="Pastificio Aurora S.r.l."
+                  placeholder="Fabrikam Pasta Ltd"
                 />
               </Campo>
               <div className="grid grid-cols-2 gap-3">
@@ -212,7 +212,7 @@ export function NuovaCommessaDialog({ open, onOpenChange, onCreated }: Props) {
                     type="email"
                     value={nuovoClienteEmail}
                     onChange={(e) => setNuovoClienteEmail(e.target.value)}
-                    placeholder="orders@customer.com"
+                    placeholder="orders@customer.example"
                   />
                 </Campo>
                 <Campo label="Phone">

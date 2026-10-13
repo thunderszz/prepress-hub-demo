@@ -29,7 +29,7 @@ export interface MockError {
   code?: string;
 }
 
-const DB_KEY = "prepress-hub-demo:db:v3";
+const DB_KEY = "prepress-hub-demo:db:v4";
 const SESSION_KEY = "prepress-hub-demo:session:v2";
 
 // ---------------------------------------------------------------

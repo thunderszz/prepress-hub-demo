@@ -284,7 +284,7 @@ export function EmailWizardDialog({
               rows={2}
               autoComplete="off"
               spellCheck={false}
-              placeholder="Paste the CC list from the customer's email, names included (e.g. Jane Doe <jane@customer.com>; …)"
+              placeholder="Paste the CC list from the customer's email, names included (e.g. Jane Doe <jane@customer.example>; …)"
             />
             {ccEmails.length > 0 ? (
               <p className="text-[11px] text-muted-foreground mt-1 break-all">

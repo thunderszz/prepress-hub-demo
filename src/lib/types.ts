@@ -223,8 +223,8 @@ export interface User {
 
 export interface GruppoPrestampa {
   id: UUID;
-  nome: string;     // e.g. "prestampa01"
-  mailbox: string;  // e.g. "prestampa01@acmeflexo.example"
+  nome: string;     // e.g. "studio-a"
+  mailbox: string;  // e.g. "studio-a@acmeflexo.example"
 }
 
 /** Join table utente_gruppi (M:N). */

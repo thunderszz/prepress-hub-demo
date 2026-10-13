@@ -37,16 +37,16 @@ const responsabileCommerciale: User = {
 
 const cliente: Cliente = {
   id: "cli-1",
-  nome: "Monte Bianco Waters S.p.A.",
-  nomeChiave: "monte bianco waters s.p.a.",
-  email: "ordini@montebianco.example",
+  nome: "Contoso Waters Inc.",
+  nomeChiave: "contoso waters inc.",
+  email: "ordini@contoso.example",
   creatoIl: "2026-01-01T00:00:00.000Z",
 };
 
 const altro: Cliente = {
   id: "cli-2",
-  nome: "Pastificio Aurora S.r.l.",
-  nomeChiave: "pastificio aurora s.r.l.",
+  nome: "Fabrikam Pasta Ltd",
+  nomeChiave: "fabrikam pasta ltd",
   creatoIl: "2026-02-01T00:00:00.000Z",
 };
 
@@ -94,9 +94,9 @@ describe("ClienteDetail — name", () => {
     entraCome(responsabileProduzione);
     const clienti = tabellaClienti({
       id: "cli-1",
-      nome: "Monte Bianco Waters S.r.l.",
-      nome_chiave: "monte bianco waters s.r.l.",
-      email: "ordini@montebianco.example",
+      nome: "Contoso Waters Ltd",
+      nome_chiave: "contoso waters ltd",
+      email: "ordini@contoso.example",
       telefono: null,
       note: null,
       creato_il: "2026-01-01T00:00:00.000Z",
@@ -104,15 +104,15 @@ describe("ClienteDetail — name", () => {
     fromMock.mockImplementation(() => clienti);
     renderScheda();
 
-    fireEvent.change(screen.getByLabelText(/name/i), { target: { value: "Monte Bianco Waters S.r.l." } });
+    fireEvent.change(screen.getByLabelText(/name/i), { target: { value: "Contoso Waters Ltd" } });
     fireEvent.click(screen.getByRole("button", { name: /save/i }));
 
     expect(
-      await screen.findByRole("heading", { name: "Monte Bianco Waters S.r.l." }),
+      await screen.findByRole("heading", { name: "Contoso Waters Ltd" }),
     ).toBeInTheDocument();
     expect(clienti.update).toHaveBeenCalledWith({
-      nome: "Monte Bianco Waters S.r.l.",
-      nome_chiave: "monte bianco waters s.r.l.",
+      nome: "Contoso Waters Ltd",
+      nome_chiave: "contoso waters ltd",
     });
   });
 
@@ -120,13 +120,13 @@ describe("ClienteDetail — name", () => {
     entraCome(responsabileProduzione);
     renderScheda();
 
-    fireEvent.change(screen.getByLabelText(/name/i), { target: { value: "pastificio aurora s.r.l." } });
+    fireEvent.change(screen.getByLabelText(/name/i), { target: { value: "fabrikam pasta ltd" } });
     // The changed email stays unsaved too: no half saves.
-    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: "amministrazione@montebianco.example" } });
+    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: "amministrazione@contoso.example" } });
     fireEvent.click(screen.getByRole("button", { name: /save/i }));
 
     expect(await screen.findByText(/already exists/i)).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Monte Bianco Waters S.p.A." })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Contoso Waters Inc." })).toBeInTheDocument();
     expect(fromMock).not.toHaveBeenCalled();
   });
 
@@ -136,12 +136,12 @@ describe("ClienteDetail — name", () => {
     fromMock.mockImplementation(() => clienti);
     renderScheda();
 
-    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: "amministrazione@montebianco.example" } });
+    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: "amministrazione@contoso.example" } });
     fireEvent.click(screen.getByRole("button", { name: /save/i }));
 
     await waitFor(() => expect(clienti.update).toHaveBeenCalledTimes(1));
     const patch = clienti.update.mock.calls[0][0] as Record<string, unknown>;
-    expect(patch.email).toBe("amministrazione@montebianco.example");
+    expect(patch.email).toBe("amministrazione@contoso.example");
     expect(patch).not.toHaveProperty("nome");
   });
 

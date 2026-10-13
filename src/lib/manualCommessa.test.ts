@@ -20,8 +20,8 @@ import type { Cliente } from "./types";
 
 const cliente: Cliente = {
   id: "cli-1",
-  nome: "Monte Bianco Waters S.p.A.",
-  nomeChiave: "monte bianco waters s.p.a.",
+  nome: "Contoso Waters Inc.",
+  nomeChiave: "contoso waters inc.",
   creatoIl: "2026-01-01T00:00:00.000Z",
 };
 
@@ -170,9 +170,9 @@ describe("createCommessaManuale", () => {
         return insertSingle({
           data: {
             id: "cli-2",
-            nome: "Pastificio Aurora S.r.l.",
-            nome_chiave: "pastificio aurora s.r.l.",
-            email: "ordini@pastificioaurora.example",
+            nome: "Fabrikam Pasta Ltd",
+            nome_chiave: "fabrikam pasta ltd",
+            email: "ordini@fabrikampasta.example",
             telefono: null,
             note: null,
             creato_il: "2026-09-17T08:00:00.000Z",
@@ -188,7 +188,7 @@ describe("createCommessaManuale", () => {
       {
         numeroCommessa: "2026/8813",
         nomeLavoro: "500g carton",
-        nuovoCliente: { nome: "Pastificio Aurora S.r.l.", email: "ordini@pastificioaurora.example" },
+        nuovoCliente: { nome: "Fabrikam Pasta Ltd", email: "ordini@fabrikampasta.example" },
       },
       "user-1",
     );
@@ -208,7 +208,7 @@ describe("createCommessaManuale", () => {
       {
         numeroCommessa: "2026/8814",
         nomeLavoro: "Label",
-        nuovoCliente: { nome: "  MONTE BIANCO WATERS S.P.A.  " },
+        nuovoCliente: { nome: "  CONTOSO WATERS INC.  " },
       },
       "user-1",
     );
@@ -312,7 +312,7 @@ describe("createCommessaManuale", () => {
       {
         numeroCommessa: "2026/8812",
         nomeLavoro: "Label",
-        nuovoCliente: { nome: "Pastificio Aurora S.r.l." },
+        nuovoCliente: { nome: "Fabrikam Pasta Ltd" },
       },
       "user-1",
     );
@@ -377,7 +377,7 @@ describe("createCommessaManuale", () => {
       {
         numeroCommessa: "2026/8815",
         nomeLavoro: "Label",
-        nuovoCliente: { nome: "Pastificio Aurora S.r.l.", email: "ordini@pastificioaurora" },
+        nuovoCliente: { nome: "Fabrikam Pasta Ltd", email: "orders@fabrikampasta" },
       },
       "user-1",
     );
@@ -393,8 +393,8 @@ describe("createCommessaManuale", () => {
 function clienteRow(overrides: Record<string, unknown> = {}) {
   return {
     id: "cli-2",
-    nome: "Pastificio Aurora S.r.l.",
-    nome_chiave: "pastificio aurora s.r.l.",
+    nome: "Fabrikam Pasta Ltd",
+    nome_chiave: "fabrikam pasta ltd",
     email: null,
     telefono: null,
     note: null,
@@ -407,7 +407,7 @@ describe("createClienteManuale", () => {
   it("creates the customer with all fields and adds it to the list", async () => {
     const clienti = insertSingle({
       data: clienteRow({
-        email: "ordini@pastificioaurora.example",
+        email: "ordini@fabrikampasta.example",
         telefono: "049 8751234",
         note: "Deliveries in the morning only",
       }),
@@ -418,8 +418,8 @@ describe("createClienteManuale", () => {
     });
 
     const r = await createClienteManuale({
-      nome: "  Pastificio Aurora S.r.l. ",
-      email: "ordini@pastificioaurora.example",
+      nome: "  Fabrikam Pasta Ltd ",
+      email: "ordini@fabrikampasta.example",
       telefono: "049 8751234",
       note: "Deliveries in the morning only",
     });
@@ -427,9 +427,9 @@ describe("createClienteManuale", () => {
     expect(r.ok).toBe(true);
     expect(clienti.insert).toHaveBeenCalledWith(
       expect.objectContaining({
-        nome: "Pastificio Aurora S.r.l.",
-        nome_chiave: "pastificio aurora s.r.l.",
-        email: "ordini@pastificioaurora.example",
+        nome: "Fabrikam Pasta Ltd",
+        nome_chiave: "fabrikam pasta ltd",
+        email: "ordini@fabrikampasta.example",
         telefono: "049 8751234",
         note: "Deliveries in the morning only",
       }),
@@ -445,7 +445,7 @@ describe("createClienteManuale", () => {
       throw new Error(`unexpected table: ${table}`);
     });
 
-    await createClienteManuale({ nome: "Pastificio Aurora S.r.l.", email: "  ", telefono: "", note: "   " });
+    await createClienteManuale({ nome: "Fabrikam Pasta Ltd", email: "  ", telefono: "", note: "   " });
 
     expect(clienti.insert).toHaveBeenCalledWith(
       expect.objectContaining({ email: null, telefono: null, note: null }),
@@ -455,7 +455,7 @@ describe("createClienteManuale", () => {
   it("rejects an empty name without touching the database", async () => {
     fromMock.mockImplementation(() => insertSingle({ data: clienteRow() }));
 
-    const r = await createClienteManuale({ nome: "   ", email: "ordini@pastificioaurora.example" });
+    const r = await createClienteManuale({ nome: "   ", email: "ordini@fabrikampasta.example" });
 
     expect(r.ok).toBe(false);
     if (r.ok === false) expect(r.reason).toMatch(/name/i);
@@ -465,7 +465,7 @@ describe("createClienteManuale", () => {
   it("rejects a malformed email without touching the database", async () => {
     fromMock.mockImplementation(() => insertSingle({ data: clienteRow() }));
 
-    const r = await createClienteManuale({ nome: "Pastificio Aurora S.r.l.", email: "ordini@pastificioaurora" });
+    const r = await createClienteManuale({ nome: "Fabrikam Pasta Ltd", email: "orders@fabrikampasta" });
 
     expect(r.ok).toBe(false);
     if (r.ok === false) expect(r.reason).toMatch(/email/i);
@@ -475,11 +475,11 @@ describe("createClienteManuale", () => {
   it("rejects a name already listed up to case and spaces, without touching the database", async () => {
     fromMock.mockImplementation(() => insertSingle({ data: clienteRow() }));
 
-    const r = await createClienteManuale({ nome: "  MONTE BIANCO WATERS S.P.A. " });
+    const r = await createClienteManuale({ nome: "  CONTOSO WATERS INC. " });
 
     expect(r.ok).toBe(false);
     // The message names the existing customer, spelled as in the list.
-    if (r.ok === false) expect(r.reason).toContain("Monte Bianco Waters S.p.A.");
+    if (r.ok === false) expect(r.reason).toContain("Contoso Waters Inc.");
     expect(fromMock).not.toHaveBeenCalled();
     expect(useClientiStore.getState().clienti).toHaveLength(1);
   });
@@ -494,11 +494,11 @@ describe("createClienteManuale", () => {
       throw new Error(`unexpected table: ${table}`);
     });
 
-    const r = await createClienteManuale({ nome: "Pastificio Aurora S.r.l." });
+    const r = await createClienteManuale({ nome: "Fabrikam Pasta Ltd" });
 
     expect(r.ok).toBe(false);
     if (r.ok === false) {
-      expect(r.reason).toContain("Pastificio Aurora S.r.l.");
+      expect(r.reason).toContain("Fabrikam Pasta Ltd");
       expect(r.reason).not.toContain("duplicate key");
     }
     expect(useClientiStore.getState().clienti).toHaveLength(1);
@@ -514,7 +514,7 @@ describe("createClienteManuale", () => {
       throw new Error(`unexpected table: ${table}`);
     });
 
-    const r = await createClienteManuale({ nome: "Pastificio Aurora S.r.l." });
+    const r = await createClienteManuale({ nome: "Fabrikam Pasta Ltd" });
 
     expect(r.ok).toBe(false);
     if (r.ok === false) {
@@ -527,7 +527,7 @@ describe("createClienteManuale", () => {
     setDemoMode(true);
     fromMock.mockImplementation(() => insertSingle({ data: clienteRow() }));
 
-    const r = await createClienteManuale({ nome: "Pastificio Aurora S.r.l." });
+    const r = await createClienteManuale({ nome: "Fabrikam Pasta Ltd" });
 
     expect(r.ok).toBe(false);
     if (r.ok === false) expect(r.reason).toMatch(/demo/i);
@@ -550,8 +550,8 @@ describe("renameClienteManuale", () => {
     const clienti = updateSingle({
       data: clienteRow({
         id: "cli-1",
-        nome: "Monte Bianco Waters S.r.l.",
-        nome_chiave: "monte bianco waters s.r.l.",
+        nome: "Contoso Waters Ltd",
+        nome_chiave: "contoso waters ltd",
         creato_il: "2026-01-01T00:00:00.000Z",
       }),
     });
@@ -560,17 +560,17 @@ describe("renameClienteManuale", () => {
       throw new Error(`unexpected table: ${table}`);
     });
 
-    const r = await renameClienteManuale("cli-1", "  Monte Bianco Waters S.r.l. ");
+    const r = await renameClienteManuale("cli-1", "  Contoso Waters Ltd ");
 
     expect(r.ok).toBe(true);
     expect(clienti.update).toHaveBeenCalledWith({
-      nome: "Monte Bianco Waters S.r.l.",
-      nome_chiave: "monte bianco waters s.r.l.",
+      nome: "Contoso Waters Ltd",
+      nome_chiave: "contoso waters ltd",
     });
     expect(clienti.eq).toHaveBeenCalledWith("id", "cli-1");
     const [rinominato] = useClientiStore.getState().clienti;
-    expect(rinominato.nome).toBe("Monte Bianco Waters S.r.l.");
-    expect(rinominato.nomeChiave).toBe("monte bianco waters s.r.l.");
+    expect(rinominato.nome).toBe("Contoso Waters Ltd");
+    expect(rinominato.nomeChiave).toBe("contoso waters ltd");
   });
 
   /** Stub that would really rename if reached: the test fails on the outcome, not on a crash. */
@@ -592,40 +592,40 @@ describe("renameClienteManuale", () => {
   it("rejects the name of another listed customer, without touching the database", async () => {
     const altro: Cliente = {
       id: "cli-2",
-      nome: "Pastificio Aurora S.r.l.",
-      nomeChiave: "pastificio aurora s.r.l.",
+      nome: "Fabrikam Pasta Ltd",
+      nomeChiave: "fabrikam pasta ltd",
       creatoIl: "2026-02-01T00:00:00.000Z",
     };
     useClientiStore.getState().setClienti([cliente, altro]);
     rinominaComunque();
 
-    const r = await renameClienteManuale("cli-1", " PASTIFICIO AURORA S.R.L.");
+    const r = await renameClienteManuale("cli-1", " FABRIKAM PASTA LTD");
 
     expect(r.ok).toBe(false);
-    if (r.ok === false) expect(r.reason).toContain("Pastificio Aurora S.r.l.");
+    if (r.ok === false) expect(r.reason).toContain("Fabrikam Pasta Ltd");
     expect(fromMock).not.toHaveBeenCalled();
-    expect(useClientiStore.getState().clienti[0].nome).toBe("Monte Bianco Waters S.p.A.");
+    expect(useClientiStore.getState().clienti[0].nome).toBe("Contoso Waters Inc.");
   });
 
   it("accepts changing only case and spaces of the same customer", async () => {
     const clienti = updateSingle({
-      data: clienteRow({ id: "cli-1", nome: "MONTE BIANCO WATERS S.P.A.", nome_chiave: "monte bianco waters s.p.a." }),
+      data: clienteRow({ id: "cli-1", nome: "CONTOSO WATERS INC.", nome_chiave: "contoso waters inc." }),
     });
     fromMock.mockImplementation(() => clienti);
 
-    const r = await renameClienteManuale("cli-1", "MONTE BIANCO WATERS S.P.A.");
+    const r = await renameClienteManuale("cli-1", "CONTOSO WATERS INC.");
 
     expect(r.ok).toBe(true);
     expect(clienti.update).toHaveBeenCalledWith({
-      nome: "MONTE BIANCO WATERS S.P.A.",
-      nome_chiave: "monte bianco waters s.p.a.",
+      nome: "CONTOSO WATERS INC.",
+      nome_chiave: "contoso waters inc.",
     });
   });
 
   it("writes nothing if the name did not change", async () => {
     rinominaComunque();
 
-    const r = await renameClienteManuale("cli-1", " Monte Bianco Waters S.p.A. ");
+    const r = await renameClienteManuale("cli-1", " Contoso Waters Inc. ");
 
     expect(r.ok).toBe(true);
     expect(fromMock).not.toHaveBeenCalled();
@@ -638,14 +638,14 @@ describe("renameClienteManuale", () => {
       }),
     );
 
-    const r = await renameClienteManuale("cli-1", "Pastificio Aurora S.r.l.");
+    const r = await renameClienteManuale("cli-1", "Fabrikam Pasta Ltd");
 
     expect(r.ok).toBe(false);
     if (r.ok === false) {
-      expect(r.reason).toContain("Pastificio Aurora S.r.l.");
+      expect(r.reason).toContain("Fabrikam Pasta Ltd");
       expect(r.reason).not.toContain("duplicate key");
     }
-    expect(useClientiStore.getState().clienti[0].nome).toBe("Monte Bianco Waters S.p.A.");
+    expect(useClientiStore.getState().clienti[0].nome).toBe("Contoso Waters Inc.");
   });
 
   it("does not report as saved a name the database did not update", async () => {
@@ -657,17 +657,17 @@ describe("renameClienteManuale", () => {
       }),
     );
 
-    const r = await renameClienteManuale("cli-1", "Monte Bianco Waters S.r.l.");
+    const r = await renameClienteManuale("cli-1", "Contoso Waters Ltd");
 
     expect(r.ok).toBe(false);
     if (r.ok === false) expect(r.reason).not.toContain("JSON object");
-    expect(useClientiStore.getState().clienti[0].nome).toBe("Monte Bianco Waters S.p.A.");
+    expect(useClientiStore.getState().clienti[0].nome).toBe("Contoso Waters Inc.");
   });
 
   it("rejects a customer that is not listed without touching the database", async () => {
     rinominaComunque();
 
-    const r = await renameClienteManuale("cli-inesistente", "Pastificio Aurora S.r.l.");
+    const r = await renameClienteManuale("cli-inesistente", "Fabrikam Pasta Ltd");
 
     expect(r.ok).toBe(false);
     expect(fromMock).not.toHaveBeenCalled();
@@ -677,7 +677,7 @@ describe("renameClienteManuale", () => {
     setDemoMode(true);
     rinominaComunque();
 
-    const r = await renameClienteManuale("cli-1", "Monte Bianco Waters S.r.l.");
+    const r = await renameClienteManuale("cli-1", "Contoso Waters Ltd");
 
     expect(r.ok).toBe(false);
     if (r.ok === false) expect(r.reason).toMatch(/demo/i);

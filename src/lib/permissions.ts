@@ -82,7 +82,7 @@ export const canAssegnare = (s: Session): boolean => isFullAccess(s.role);
 /**
  * Who can receive a job (§4.3, WF-03): active designers and anyone who,
  * despite another role, belongs to a prepress team — the Design Team
- * Lead sits in prestampa05 and is assigned like a designer. The DB puts
+ * Lead sits in studio-e and is assigned like a designer. The DB puts
  * no constraint on the assignee's role.
  */
 export function utentiAssegnabili(users: User[], memberships: UtenteGruppo[]): User[] {

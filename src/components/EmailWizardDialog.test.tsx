@@ -69,7 +69,7 @@ beforeEach(() => {
     }],
   });
   useGruppiStore.setState({
-    gruppi: [{ id: "gruppo-1", nome: "prestampa01", mailbox: "prestampa01@acmeflexo.example" }],
+    gruppi: [{ id: "gruppo-1", nome: "studio-a", mailbox: "studio-a@acmeflexo.example" }],
   });
   useTemplatesStore.setState({
     templates: [{ id: "template-1", kind: "pdf", oggetto: "", corpo: "" }],
@@ -301,10 +301,10 @@ describe("EmailWizardDialog", () => {
     const cc = within(dialog).getByLabelText(/^CC/);
     fireEvent.change(cc, {
       target: {
-        value: 'John Smith <john@customer.com>; "Brown, Luke" <luke@customer.com>, cliente@example.test',
+        value: 'John Smith <john@customer.example>; "Brown, Luke" <luke@customer.example>, cliente@example.test',
       },
     });
-    expect(within(dialog).getByText(/john@customer\.com, luke@customer\.com/)).toBeInTheDocument();
+    expect(within(dialog).getByText(/john@customer\.example, luke@customer\.example/)).toBeInTheDocument();
 
     fireEvent.click(within(dialog).getByRole("button", { name: "Send" }));
 
@@ -312,7 +312,7 @@ describe("EmailWizardDialog", () => {
     expect(inviaEmailMock.mock.calls[0][2]).toEqual(
       expect.objectContaining({
         destinatari: ["cliente@example.test"],
-        cc: ["john@customer.com", "luke@customer.com"],
+        cc: ["john@customer.example", "luke@customer.example"],
       }),
     );
   });
@@ -334,7 +334,7 @@ describe("EmailWizardDialog", () => {
   it("blocks sending if a CC address has a typo", () => {
     const dialog = renderWizard();
     fireEvent.change(within(dialog).getByLabelText(/^CC/), {
-      target: { value: "john@customer, luke@customer.com" },
+      target: { value: "john@customer, luke@customer.example" },
     });
 
     fireEvent.click(within(dialog).getByRole("button", { name: "Send" }));

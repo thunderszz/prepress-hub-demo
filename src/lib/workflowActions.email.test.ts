@@ -57,7 +57,7 @@ const serverEmail: EmailInviata = {
   commessaId: "commessa-1",
   data: now,
   templateKind: "pdf",
-  mittente: "prestampa01@acmeflexo.example",
+  mittente: "studio-a@acmeflexo.example",
   destinatari: ["cliente@example.test"],
   oggetto: "PDF ready",
   corpo: "Attached.",
@@ -69,7 +69,7 @@ const serverEmail: EmailInviata = {
 
 const payloadBase = {
   kind: "pdf" as const,
-  mittente: "prestampa01@acmeflexo.example",
+  mittente: "studio-a@acmeflexo.example",
   destinatari: ["cliente@example.test"],
   oggetto: "PDF ready",
   corpo: "Attached.",
@@ -183,20 +183,20 @@ describe("inviaEmail — carbon copy (CC)", () => {
   it("passes CC to the Edge Function and writes it into the history", async () => {
     sendEmailViaFunctionMock.mockResolvedValue({
       sent: true,
-      email: { ...serverEmail, cc: ["john@customer.com", "luke@customer.com"] },
+      email: { ...serverEmail, cc: ["john@customer.example", "luke@customer.example"] },
     });
 
     const res = await inviaEmail("commessa-1", fullAccess.id, {
       ...payloadBase,
-      cc: ["john@customer.com", "luke@customer.com"],
+      cc: ["john@customer.example", "luke@customer.example"],
     });
 
     expect(res.ok).toBe(true);
     expect(sendEmailViaFunctionMock).toHaveBeenCalledWith(
-      expect.objectContaining({ cc: ["john@customer.com", "luke@customer.com"] }),
+      expect.objectContaining({ cc: ["john@customer.example", "luke@customer.example"] }),
     );
     const evento = useEventiStore.getState().eventi[0];
-    expect(evento.dettaglio).toBe("To: cliente@example.test · CC: john@customer.com, luke@customer.com");
+    expect(evento.dettaglio).toBe("To: cliente@example.test · CC: john@customer.example, luke@customer.example");
   });
 
   it("without CC the history stays as before", async () => {
@@ -210,8 +210,8 @@ describe("inviaEmail — carbon copy (CC)", () => {
   it("in QA demo mode CC is archived locally too", async () => {
     emailViaSupabaseMock.mockReturnValue(false);
 
-    await inviaEmail("commessa-1", fullAccess.id, { ...payloadBase, cc: ["john@customer.com"] });
+    await inviaEmail("commessa-1", fullAccess.id, { ...payloadBase, cc: ["john@customer.example"] });
 
-    expect(useEmailStore.getState().emailInviate[0].cc).toEqual(["john@customer.com"]);
+    expect(useEmailStore.getState().emailInviate[0].cc).toEqual(["john@customer.example"]);
   });
 });

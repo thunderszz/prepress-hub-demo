@@ -18,7 +18,7 @@ const EMAIL_ROW = {
   commessa_id: "commessa-1",
   data: "2026-06-10T10:00:00.000Z",
   template_kind: "pdf",
-  mittente: "prestampa01@acmeflexo.example",
+  mittente: "studio-a@acmeflexo.example",
   destinatari: ["cliente@example.test"],
   oggetto: "PDF pronto",
   corpo: "PDF attached.",
@@ -58,7 +58,7 @@ describe("sendEmailViaFunction", () => {
     const res = await sendEmailViaFunction({
       commessaId: "commessa-1",
       kind: "pdf",
-      mittente: "prestampa01@acmeflexo.example",
+      mittente: "studio-a@acmeflexo.example",
       destinatari: ["cliente@example.test"],
       oggetto: "PDF pronto",
       corpo: "PDF attached.",
@@ -85,7 +85,7 @@ describe("sendEmailViaFunction", () => {
     const res = await sendEmailViaFunction({
       commessaId: "commessa-1",
       kind: "pdf",
-      mittente: "prestampa01@acmeflexo.example",
+      mittente: "studio-a@acmeflexo.example",
       destinatari: ["cliente@example.test"],
       oggetto: "PDF pronto",
       corpo: "Corpo.",
@@ -108,7 +108,7 @@ describe("sendEmailViaFunction", () => {
     const res = await sendEmailViaFunction({
       commessaId: "commessa-1",
       kind: "pdf",
-      mittente: "prestampa01@acmeflexo.example",
+      mittente: "studio-a@acmeflexo.example",
       destinatari: ["cliente@example.test"],
       oggetto: "PDF",
       corpo: "Corpo.",
@@ -123,7 +123,7 @@ describe("sendEmailViaFunction", () => {
     const res = await sendEmailViaFunction({
       commessaId: "commessa-1",
       kind: "pdf",
-      mittente: "prestampa01@acmeflexo.example",
+      mittente: "studio-a@acmeflexo.example",
       destinatari: ["cliente@example.test"],
       oggetto: "PDF",
       corpo: "Corpo.",
@@ -133,22 +133,22 @@ describe("sendEmailViaFunction", () => {
 
   it("forwards CC to the function and reads it back from the archived row", async () => {
     invokeMock.mockResolvedValue({
-      data: { ok: true, stato: "inviata", reason: null, email: { ...EMAIL_ROW, cc: ["john@customer.com"] } },
+      data: { ok: true, stato: "inviata", reason: null, email: { ...EMAIL_ROW, cc: ["john@customer.example"] } },
       error: null,
     });
     const res = await sendEmailViaFunction({
       commessaId: "commessa-1",
       kind: "pdf",
-      mittente: "prestampa01@acmeflexo.example",
+      mittente: "studio-a@acmeflexo.example",
       destinatari: ["cliente@example.test"],
-      cc: ["john@customer.com"],
+      cc: ["john@customer.example"],
       oggetto: "PDF",
       corpo: "Corpo.",
     });
     expect(invokeMock).toHaveBeenCalledWith("send-email", expect.objectContaining({
-      body: expect.objectContaining({ cc: ["john@customer.com"] }),
+      body: expect.objectContaining({ cc: ["john@customer.example"] }),
     }));
-    expect(res.email?.cc).toEqual(["john@customer.com"]);
+    expect(res.email?.cc).toEqual(["john@customer.example"]);
   });
 
   it("row archived before the cc column: empty CC, not undefined", async () => {
@@ -159,7 +159,7 @@ describe("sendEmailViaFunction", () => {
     const res = await sendEmailViaFunction({
       commessaId: "commessa-1",
       kind: "pdf",
-      mittente: "prestampa01@acmeflexo.example",
+      mittente: "studio-a@acmeflexo.example",
       destinatari: ["cliente@example.test"],
       oggetto: "PDF",
       corpo: "Corpo.",

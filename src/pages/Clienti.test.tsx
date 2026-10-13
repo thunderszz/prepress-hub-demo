@@ -38,8 +38,8 @@ const responsabileCommerciale: User = {
 
 const esistente: Cliente = {
   id: "cli-1",
-  nome: "Monte Bianco Waters S.p.A.",
-  nomeChiave: "monte bianco waters s.p.a.",
+  nome: "Contoso Waters Inc.",
+  nomeChiave: "contoso waters inc.",
   creatoIl: "2026-01-01T00:00:00.000Z",
 };
 
@@ -96,9 +96,9 @@ describe("Customers — New customer", () => {
         single: vi.fn().mockResolvedValue({
           data: {
             id: "cli-2",
-            nome: "Pastificio Aurora S.r.l.",
-            nome_chiave: "pastificio aurora s.r.l.",
-            email: "ordini@pastificioaurora.example",
+            nome: "Fabrikam Pasta Ltd",
+            nome_chiave: "fabrikam pasta ltd",
+            email: "ordini@fabrikampasta.example",
             telefono: "049 8751234",
             note: "Deliveries in the morning only",
             creato_il: "2026-09-21T08:00:00.000Z",
@@ -114,8 +114,8 @@ describe("Customers — New customer", () => {
     renderClienti();
 
     fireEvent.click(screen.getByRole("button", { name: /new customer/i }));
-    fireEvent.change(screen.getByLabelText(/name/i), { target: { value: "Pastificio Aurora S.r.l." } });
-    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: "ordini@pastificioaurora.example" } });
+    fireEvent.change(screen.getByLabelText(/name/i), { target: { value: "Fabrikam Pasta Ltd" } });
+    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: "ordini@fabrikampasta.example" } });
     fireEvent.change(screen.getByLabelText(/phone/i), { target: { value: "049 8751234" } });
     fireEvent.change(screen.getByLabelText(/notes/i), { target: { value: "Deliveries in the morning only" } });
     fireEvent.click(screen.getByRole("button", { name: /create customer/i }));
@@ -123,8 +123,8 @@ describe("Customers — New customer", () => {
     expect(await screen.findByText("scheda cli-2")).toBeInTheDocument();
     expect(insert).toHaveBeenCalledWith(
       expect.objectContaining({
-        nome: "Pastificio Aurora S.r.l.",
-        email: "ordini@pastificioaurora.example",
+        nome: "Fabrikam Pasta Ltd",
+        email: "ordini@fabrikampasta.example",
         telefono: "049 8751234",
         note: "Deliveries in the morning only",
       }),
@@ -136,7 +136,7 @@ describe("Customers — New customer", () => {
     renderClienti();
 
     fireEvent.click(screen.getByRole("button", { name: /new customer/i }));
-    fireEvent.change(screen.getByLabelText(/name/i), { target: { value: "monte bianco waters s.p.a." } });
+    fireEvent.change(screen.getByLabelText(/name/i), { target: { value: "contoso waters inc." } });
     fireEvent.click(screen.getByRole("button", { name: /create customer/i }));
 
     expect(await screen.findByText(/already exists/i)).toBeInTheDocument();

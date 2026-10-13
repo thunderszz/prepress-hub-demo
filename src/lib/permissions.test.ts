@@ -23,9 +23,9 @@ describe("utentiAssegnabili", () => {
   const giulia = user({ id: "a1", nome: "Giulia F.", ruolo: "responsabile_produzione" });
   const users = [grafico, graficoSenzaGruppo, graficoInattivo, marco, giulia];
   const memberships: UtenteGruppo[] = [
-    { userId: "g1", gruppoId: "prestampa05" },
-    { userId: "d1", gruppoId: "prestampa05" },
-    { userId: "g3", gruppoId: "prestampa05" },
+    { userId: "g1", gruppoId: "studio-e" },
+    { userId: "d1", gruppoId: "studio-e" },
+    { userId: "g3", gruppoId: "studio-e" },
   ];
 
   it("§4.3: a Design Team Lead who belongs to a team can be assigned like a designer", () => {
