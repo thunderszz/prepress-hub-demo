@@ -13,7 +13,7 @@
 --
 -- NB: customer renaming has nothing to undo here: it uses the
 -- UPDATE grant and the `clienti_write` policy, which already existed
--- and stay (they fix email, phone and notes, CLI-04). The boundary
+-- and stay (they edit email, phone and notes). The boundary
 -- is only in the frontend: remove the editable name field.
 --
 -- NB: `eventi_insert` and `clienti_write` do not appear here because

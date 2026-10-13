@@ -1,13 +1,9 @@
-// =============================================================
-// Job file storage (§9) — binaries in Supabase Storage.
-// Private bucket "commessa-files"; path: <commessa_id>/<sanitised-name>.
-// Same name → same path → overwrite (FILE-02).
-// Metadata stays in file_commessa (storage_path); retention is
-// server-side (migrations 0009/0010).
-// =============================================================
+// Job files. Binaries go to the private "commessa-files" bucket at
+// <commessa_id>/<sanitised-name>, so uploading the same name again replaces
+// the file. Metadata lives in file_commessa; retention runs server-side
+// (migrations 0009 and 0010).
 
-import { supabase, hasSupabaseConfig } from "./supabase";
-import { isDemoMode } from "./supabaseWrites";
+import { supabase } from "./supabase";
 import { uploadFile } from "./workflowActions";
 import { useFileStore } from "./store";
 import type { FileCommessa, FileTipo } from "./types";
@@ -64,9 +60,8 @@ export type UploadCommessaFileResult =
   | { ok: false; reason: string };
 
 /**
- * Uploads a job file: first the binary to storage (skipped in QA demo
- * mode or without config), then metadata + history event (FILE-01/02).
- * If storage rejects it, no metadata is written.
+ * Uploads a job file: the binary to storage first, then its metadata and a
+ * history event. If storage rejects the file, no metadata is written.
  */
 export async function uploadCommessaFile(
   commessaId: string,
@@ -79,23 +74,19 @@ export async function uploadCommessaFile(
   }
 
   const path = storagePathForFile(commessaId, file.name);
-  const writesToStorage = !isDemoMode() && hasSupabaseConfig;
-
-  if (writesToStorage) {
-    const replacesExisting = hasAvailableStorageFile(commessaId, file.name, path);
-    const { error } = await supabase.storage
-      .from(FILES_BUCKET)
-      .upload(path, file, { upsert: replacesExisting, contentType: file.type });
-    if (error) {
-      return { ok: false, reason: `Storage: ${error.message}` };
-    }
+  const replacesExisting = hasAvailableStorageFile(commessaId, file.name, path);
+  const { error } = await supabase.storage
+    .from(FILES_BUCKET)
+    .upload(path, file, { upsert: replacesExisting, contentType: file.type });
+  if (error) {
+    return { ok: false, reason: `Storage: ${error.message}` };
   }
 
   const res = uploadFile(commessaId, userId, {
     nome: file.name,
     tipo,
     dimensioneBytes: file.size,
-    storagePath: writesToStorage ? path : null,
+    storagePath: path,
   });
   return { ok: true, replaced: res.replaced };
 }
@@ -105,7 +96,7 @@ export async function uploadCommessaFile(
  * is no longer available (retention).
  */
 export async function getFileDownloadUrl(f: FileCommessa): Promise<string | null> {
-  if (!f.storagePath || !f.binarioDisponibile || !hasSupabaseConfig) return null;
+  if (!f.storagePath || !f.binarioDisponibile) return null;
   const { data, error } = await supabase.storage
     .from(FILES_BUCKET)
     .createSignedUrl(f.storagePath, SIGNED_URL_TTL, { download: f.nome });

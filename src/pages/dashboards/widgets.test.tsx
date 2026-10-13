@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it } from "vitest";
-import { UltimiEventi } from "./_shared";
+import { UltimiEventi } from "./widgets";
 import { useCommesseStore, useEventiStore, useUsersStore } from "@/lib/store";
 import type { Commessa, Evento, User } from "@/lib/types";
 

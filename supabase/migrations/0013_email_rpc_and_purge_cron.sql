@@ -1,5 +1,5 @@
 -- =============================================================
--- 0013 — Real emails (§11) and physical purge of expired binaries
+-- 0013 — Real emails and physical purge of expired binaries
 --
 -- 1) Public RPC can_edit_commessa: exposes the permission check
 --    app_private.can_edit_workflow to the send-email Edge Function

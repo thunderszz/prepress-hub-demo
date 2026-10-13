@@ -1,9 +1,9 @@
-// =============================================================
-// MANUAL-MODE — manual creation of jobs and customers.
+// MANUAL-MODE: creating jobs and customers by hand.
 //
-// Temporary bridge: by design jobs are born in the ERP (SYN-01) and
-// arrive through a server-side sync that is not available yet. This
-// module lets users create them from the portal.
+// Jobs are meant to arrive from the ERP through a server-side sync that
+// does not exist yet. Until it does, this module lets users create them
+// from the portal. Everything that exists only for this is marked
+// MANUAL-MODE, so it can be removed in one pass.
 //
 // Who can use it: full-access roles only. That is enforced by
 // `canCreateCommessa`, `canCreateCliente` and `canRenameCliente` (which
@@ -20,10 +20,8 @@
 // console) every insert here is awaited and errors surface in the UI: a
 // silently failed creation would leave the job only in memory, gone at
 // the next refresh.
-// =============================================================
 
-import { hasSupabaseConfig, supabase } from "./supabase";
-import { isDemoMode } from "./supabaseWrites";
+import { supabase } from "./supabase";
 import { mapCliente, mapCommessa } from "./supabaseData";
 import { useClientiStore, useCommesseStore, useEventiStore } from "./store";
 import { isValidEmail } from "./emailValidation";
@@ -66,9 +64,6 @@ export interface NuovaCommessaInput {
   dataConsegnaPrevista?: string;
 }
 
-// Outcomes are checked with `esito.ok === false`, not `!esito.ok`:
-// with `strict: false` (tsconfig.app.json) TypeScript does not narrow
-// the union on `!`, and `esito.reason` would not compile.
 export type CreateCommessaOutcome =
   /**
    * `avviso` (warning) = the job exists, but something secondary
@@ -125,14 +120,10 @@ export async function createClienteManuale(input: NuovoClienteInput): Promise<Cl
   const nome = input.nome.trim();
   if (!nome) return { ok: false, reason: "Customer name is required." };
   // Same rule as the customer page: the email becomes the default
-  // recipient in the send wizard (§5.6), so a typo here travels there.
+  // recipient in the send wizard, so a typo here travels there.
   if (input.email?.trim() && !isValidEmail(input.email)) {
     return { ok: false, reason: "Invalid email: use the form name@domain.com." };
   }
-  if (!hasSupabaseConfig || isDemoMode()) {
-    return { ok: false, reason: "Customers cannot be created in demo mode." };
-  }
-
   const chiave = chiaveCliente(nome);
   const omonimo = useClientiStore.getState().clienti.find((c) => c.nomeChiave === chiave);
   if (omonimo) return { ok: false, reason: clienteGiaPresente(omonimo.nome) };
@@ -165,10 +156,6 @@ export async function createClienteManuale(input: NuovoClienteInput): Promise<Cl
 export async function renameClienteManuale(id: string, nuovoNome: string): Promise<ClienteOutcome> {
   const nome = nuovoNome.trim();
   if (!nome) return { ok: false, reason: "Customer name cannot be empty." };
-  if (!hasSupabaseConfig || isDemoMode()) {
-    return { ok: false, reason: "Customers cannot be edited in demo mode." };
-  }
-
   const { clienti } = useClientiStore.getState();
   const attuale = clienti.find((c) => c.id === id);
   if (!attuale) return { ok: false, reason: "Customer not found. Reload the page and try again." };
@@ -235,10 +222,6 @@ export async function createCommessaManuale(
   if (!input.clienteId && !input.nuovoCliente?.nome?.trim()) {
     return { ok: false, reason: "Pick an existing customer or enter the name of a new one." };
   }
-  if (!hasSupabaseConfig || isDemoMode()) {
-    return { ok: false, reason: "Jobs cannot be created in demo mode." };
-  }
-
   // Duplicate already visible in the list: fail immediately, without a
   // round trip to the database.
   const giaPresente = useCommesseStore
@@ -297,11 +280,9 @@ export async function createCommessaManuale(
   const commesseStore = useCommesseStore.getState();
   commesseStore.setCommesse([commessa, ...commesseStore.commesse]);
 
-  // Creation event (LOG-02). If it fails the job is still valid but its
-  // history starts empty: a refresh will NOT recover it, because the row
-  // was never written. That's why the error is reported, not swallowed
-  // (it used to be silently dropped while `eventi_insert` rejected it
-  // with 42501).
+  // Creation event. If it fails the job is still valid but its history
+  // starts empty, and a refresh will not recover it because the row was
+  // never written: so the error is reported, not swallowed.
   const evento = {
     id: crypto.randomUUID(),
     commessa_id: commessa.id,

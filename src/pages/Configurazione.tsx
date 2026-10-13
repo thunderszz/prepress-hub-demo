@@ -20,7 +20,6 @@ import {
   ROLES,
   ROLE_LABELS,
   Role,
-  User,
 } from "@/lib/types";
 import { canManageUsers } from "@/lib/permissions";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -72,9 +71,7 @@ export default function Configurazione() {
   );
 }
 
-// =============================================================
 // USERS
-// =============================================================
 function UtentiTab() {
   const users = useUsersStore((s) => s.users);
 
@@ -208,9 +205,7 @@ function UtentiTab() {
   );
 }
 
-// =============================================================
 // PREPRESS TEAMS
-// =============================================================
 function GruppiTab() {
   const gruppi = useGruppiStore((s) => s.gruppi);
   const memberships = useUtenteGruppiStore((s) => s.utenteGruppi);
@@ -265,9 +260,7 @@ function GruppiTab() {
   );
 }
 
-// =============================================================
 // MAILBOXES — read only
-// =============================================================
 function CaselleTab() {
   const gruppi = useGruppiStore((s) => s.gruppi);
   return (
@@ -298,9 +291,7 @@ function CaselleTab() {
   );
 }
 
-// =============================================================
 // EMAIL TEMPLATES
-// =============================================================
 function TemplateTab() {
   const templates = useTemplatesStore((s) => s.templates);
   const session = useCurrentSession()!;

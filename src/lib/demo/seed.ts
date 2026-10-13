@@ -1,4 +1,3 @@
-// =============================================================
 // Demo data — entirely made up.
 //
 // Companies, people, jobs and email addresses are fictional (reserved
@@ -6,7 +5,6 @@
 // "walking" the real workflow up to its target status, so events,
 // emails, files and the metro map stay consistent.
 // Dates are relative to the moment the data is first loaded.
-// =============================================================
 
 import type { Database } from "../database.types";
 
@@ -17,11 +15,9 @@ type EventoTipo = Database["public"]["Enums"]["evento_tipo"];
 type Seed = { [K in keyof Tables]: Row<K>[] };
 
 export const DEMO_PASSWORD = "demo";
-export const DEMO_DOMAIN = "acmeflexo.example";
+const DEMO_DOMAIN = "acmeflexo.example";
 
-// ---------------------------------------------------------------
 // People (fictional)
-// ---------------------------------------------------------------
 type Ruolo = Row<"utenti">["ruolo"];
 const PERSONE: Array<{ nome: string; user: string; ruolo: Ruolo; gruppi: string[] }> = [
   { nome: "Giulia Ferri", user: "giulia.ferri", ruolo: "responsabile_produzione", gruppi: ["studio-a"] },
@@ -44,9 +40,7 @@ export const DEMO_USERS = PERSONE.map((p) => ({
   ruolo: p.ruolo,
 }));
 
-// ---------------------------------------------------------------
 // Customers (fictional)
-// ---------------------------------------------------------------
 const CLIENTI: Array<{ nome: string; email?: string; telefono?: string; note?: string }> = [
   { nome: "Fabrikam Pasta Ltd", email: "artwork@fabrikampasta.example", telefono: "+39 0000 100200", note: "PDF approvals come from the marketing department only." },
   { nome: "Contoso Waters Inc.", email: "packaging@contoso.example", telefono: "+39 0000 300400" },
@@ -64,9 +58,7 @@ const STAMPATORI = [
   { nome: "Wide World Packaging", cod: "ST-031" },
 ];
 
-// ---------------------------------------------------------------
 // Jobs: target-state specification
-// ---------------------------------------------------------------
 interface Spec {
   lavoro: string;
   soggetto?: string;
@@ -121,9 +113,7 @@ const SPECS: Spec[] = [
   { lavoro: "Seasonal counter display", soggetto: "Display", cliente: 4, stato: "in_lavorazione", giorniFa: 100, grafici: [0], rifiuti: 3, correzioni: [50, 45], sospesa: { motivo: "cliente", nota: "Project frozen by the customer until next season." } },
 ];
 
-// ---------------------------------------------------------------
 // Email templates
-// ---------------------------------------------------------------
 const TEMPLATES: Array<Pick<Row<"email_template">, "kind" | "oggetto" | "corpo">> = [
   {
     kind: "pdf",
@@ -149,9 +139,7 @@ const TEMPLATES: Array<Pick<Row<"email_template">, "kind" | "oggetto" | "corpo">
   },
 ];
 
-// ---------------------------------------------------------------
 // Generator
-// ---------------------------------------------------------------
 const HOUR = 3600_000;
 const DAY = 24 * HOUR;
 

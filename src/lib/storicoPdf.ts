@@ -18,7 +18,7 @@ const PAGE_W = 210;
 const PAGE_H = 297;
 const BODY_W = PAGE_W - MARGIN * 2;
 
-export function buildStoricoPdf({ commessa, cliente, eventi, users, emailInviate }: StoricoPdfInput): jsPDF {
+function buildStoricoPdf({ commessa, cliente, eventi, users, emailInviate }: StoricoPdfInput): jsPDF {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   let y = MARGIN;
 

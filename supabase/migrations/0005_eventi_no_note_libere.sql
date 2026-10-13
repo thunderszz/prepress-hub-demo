@@ -1,12 +1,12 @@
 -- =============================================================
 -- 0005_eventi_no_note_libere.sql
--- Aligns `eventi_insert` with REQUIREMENTS v0.4.
+-- Read-only roles can no longer write notes in the history.
 --
 -- The policy used to have a `tipo = 'nota_interna'` branch open to
 -- ANY authenticated user: even read-only roles (Sales,
 -- Administration) could write a note.
--- Spec v0.4 (§4.1) says those roles change NOTHING: no free notes.
--- Legitimate operational notes (handover, WF-25) stay covered by
+-- Those roles must not change anything, notes included.
+-- Operational notes (handover notes, for example) stay covered by
 -- the `can_edit_workflow` branch.
 --
 -- Result:

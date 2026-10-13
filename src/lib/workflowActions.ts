@@ -1,5 +1,4 @@
-// =============================================================
-// Workflow actions — high-level orchestration (PHASE 2)
+// Workflow actions: what the buttons on a job do.
 //
 // Every action:
 //  1. validates (status + basic permissions)
@@ -7,17 +6,15 @@
 //  3. records an immutable event in `eventi`
 //
 // Stores are accessed through getState() so actions can be called
-// outside React too (handy for tests/dev).
-// =============================================================
+// outside React too, in tests for example.
 
 import {
-  EmailInviata,
-  EmailStato,
   EmailTemplateKind,
   EMAIL_TEMPLATE_LABELS,
   EsitoCaduta,
   EsitoProvaColore,
   EventoTipo,
+  FileTipo,
   ESITO_CADUTA_LABELS,
   ESITO_PROVA_COLORE_LABELS,
   MOTIVO_SOSPENSIONE_LABELS,
@@ -26,8 +23,8 @@ import {
   STATO_LABELS,
 } from "./types";
 import {
-  useClientiStore,
   useCommesseStore,
+  useCorrezioniStore,
   useEmailStore,
   useEventiStore,
   useFileStore,
@@ -35,24 +32,24 @@ import {
   useSospensioniStore,
   useUsersStore,
   useUtenteGruppiStore,
-  useTemplatesStore,
   useAssegnatariStore,
   performTransition,
 } from "./store";
 import { canEditWorkflow, canMarkShipped, Session } from "./permissions";
-import { emailViaSupabase, sendEmailViaFunction } from "./emailSend";
+import { sendEmailViaFunction } from "./emailSend";
 import { flushPendingWrites } from "./supabaseWrites";
+
+const findCommessa = (id: string) => useCommesseStore.getState().commesse.find((c) => c.id === id);
+
+const designers = (count: number) => `${count} designer${count === 1 ? "" : "s"}`;
 
 export type ActionResult =
   | { ok: true }
   | { ok: false; reason: string; needsForzatura?: boolean };
 
-// -------------------------------------------------------------
-// Action-side permission guards (defence in depth; in production the
-// source of truth is the RLS policies — see permissions.ts).
-// Resolves the user's role from the store so call sites don't have to
-// pass the Session around.
-// -------------------------------------------------------------
+// Permission checks repeated here as defence in depth: in production the
+// database's RLS policies are the real gate (see permissions.ts). The
+// user's role is looked up in the store, so callers pass only the user id.
 function sessionFor(userId: string): Session | null {
   const u = useUsersStore.getState().users.find((x) => x.id === userId);
   return u ? { userId: u.id, role: u.ruolo } : null;
@@ -93,9 +90,7 @@ function guardCanAdvance(
   return guardCanEdit(userId, commessaId);
 }
 
-// -------------------------------------------------------------
-// Transition labels (drive the UI buttons)
-// -------------------------------------------------------------
+// The next steps offered on a job, as button labels
 export interface TransitionOption {
   to: StatoCommessa;
   label: string;
@@ -107,7 +102,7 @@ export interface TransitionOption {
 
 /** Returns the "natural" transitions from the current status, labelled for buttons. */
 export function transitionsFor(commessaId: string): TransitionOption[] {
-  const c = useCommesseStore.getState().commesse.find((x) => x.id === commessaId);
+  const c = findCommessa(commessaId);
   if (!c) return [];
 
   switch (c.stato) {
@@ -200,12 +195,10 @@ export function transitionsFor(commessaId: string): TransitionOption[] {
   }
 }
 
-// -------------------------------------------------------------
-// Action: take ownership
-// -------------------------------------------------------------
+// Take ownership
 export function prendiInCarico(commessaId: string, userId: string): ActionResult {
   const cStore = useCommesseStore.getState();
-  const c = cStore.commesse.find((x) => x.id === commessaId);
+  const c = findCommessa(commessaId);
   if (!c) return { ok: false, reason: "Job not found." };
   if (c.presaInCaricoDaUserId)
     return { ok: false, reason: "Job already claimed." };
@@ -225,9 +218,7 @@ export function prendiInCarico(commessaId: string, userId: string): ActionResult
   });
 }
 
-// -------------------------------------------------------------
-// Action: assignment (WF-03/04) — full access only
-// -------------------------------------------------------------
+// Assign designers (full access only)
 export function assegnaCommessa(
   commessaId: string,
   userId: string,
@@ -235,7 +226,7 @@ export function assegnaCommessa(
   terminePrimoPdfIso?: string,
 ): ActionResult {
   const cStore = useCommesseStore.getState();
-  const c = cStore.commesse.find((x) => x.id === commessaId);
+  const c = findCommessa(commessaId);
   if (!c) return { ok: false, reason: "Job not found." };
   if (c.stato !== "disponibile")
     return { ok: false, reason: "The job is not in 'Available' status." };
@@ -252,17 +243,17 @@ export function assegnaCommessa(
     userId,
     eventoTipo: "assegnazione",
     eventoTitolo: "Assigned to designers",
-    eventoDettaglio: `${userIds.length} designer${userIds.length === 1 ? "" : "s"}`,
+    eventoDettaglio: designers(userIds.length),
   });
 }
 
-// WF-07: change assignment while "assegnata" / "in_lavorazione" — no status change.
+// Change the assignees while the job is assigned or in progress; the status stays.
 export function modificaAssegnazione(
   commessaId: string,
   userId: string,
   userIds: string[],
 ): ActionResult {
-  const c = useCommesseStore.getState().commesse.find((x) => x.id === commessaId);
+  const c = findCommessa(commessaId);
   if (!c) return { ok: false, reason: "Job not found." };
   if (c.stato !== "assegnata" && c.stato !== "in_lavorazione")
     return { ok: false, reason: "Can only be changed while 'Assigned' or 'In progress'." };
@@ -275,21 +266,19 @@ export function modificaAssegnazione(
     userId,
     tipo: "modifica_assegnazione",
     titolo: "Assignment updated",
-    dettaglio: `${userIds.length} designer${userIds.length === 1 ? "" : "s"}`,
+    dettaglio: designers(userIds.length),
   });
   return { ok: true };
 }
 
-// -------------------------------------------------------------
-// Action: advance status (optionally with an override)
-// -------------------------------------------------------------
+// Advance the status, optionally as an override
 export function advanceTo(
   commessaId: string,
   userId: string,
   to: StatoCommessa,
   opts?: { forzaturaNota?: string },
 ): ActionResult {
-  const c = useCommesseStore.getState().commesse.find((x) => x.id === commessaId);
+  const c = findCommessa(commessaId);
   if (!c) return { ok: false, reason: "Job not found." };
   const denied = guardCanAdvance(userId, commessaId, to);
   if (denied) return denied;
@@ -306,9 +295,7 @@ export function advanceTo(
   });
 }
 
-// -------------------------------------------------------------
-// Action: put on hold / resume
-// -------------------------------------------------------------
+// Put on hold and resume
 export function sospendiCommessa(
   commessaId: string,
   userId: string,
@@ -316,7 +303,7 @@ export function sospendiCommessa(
   nota?: string,
 ): ActionResult {
   const cStore = useCommesseStore.getState();
-  const c = cStore.commesse.find((x) => x.id === commessaId);
+  const c = findCommessa(commessaId);
   if (!c) return { ok: false, reason: "Job not found." };
   const denied = guardCanEdit(userId, commessaId);
   if (denied) return denied;
@@ -344,7 +331,7 @@ export function sospendiCommessa(
 
 export function riattivaCommessa(commessaId: string, userId: string): ActionResult {
   const cStore = useCommesseStore.getState();
-  const c = cStore.commesse.find((x) => x.id === commessaId);
+  const c = findCommessa(commessaId);
   if (!c) return { ok: false, reason: "Job not found." };
   const denied = guardCanEdit(userId, commessaId);
   if (denied) return denied;
@@ -362,9 +349,7 @@ export function riattivaCommessa(commessaId: string, userId: string): ActionResu
   return { ok: true };
 }
 
-// -------------------------------------------------------------
-// Action: record outcomes (does not advance the status — buttons do)
-// -------------------------------------------------------------
+// Record proof outcomes (they don't advance the status; the buttons do)
 export function setEsitoProvaColore(
   commessaId: string,
   userId: string,
@@ -399,9 +384,7 @@ export function setEsitoCaduta(
   return { ok: true };
 }
 
-// -------------------------------------------------------------
-// Action: internal note
-// -------------------------------------------------------------
+// Notes
 export function aggiungiNotaInterna(
   commessaId: string,
   userId: string,
@@ -438,10 +421,7 @@ export function aggiungiNotaSottopassaggio(
   return { ok: true };
 }
 
-// -------------------------------------------------------------
-// Action: log correction time (option B §10)
-// -------------------------------------------------------------
-import { useCorrezioniStore } from "./store";
+// Log correction time
 export function registraCorrezione(
   commessaId: string,
   userId: string,
@@ -470,10 +450,7 @@ export function registraCorrezione(
   return { ok: true };
 }
 
-// -------------------------------------------------------------
-// Action: files
-// -------------------------------------------------------------
-import { FileTipo } from "./types";
+// Files
 export function uploadFile(
   commessaId: string,
   userId: string,
@@ -520,9 +497,7 @@ export function registraWeTransfer(
 // Retention cleanup is server-side (migrations 0009/0010,
 // pg_cron job "file-retention-daily"): nothing to do on the client.
 
-// =============================================================
-// EMAIL (Phase 3 — §5.6, §11)
-// =============================================================
+// Customer emails
 
 const TIPO_EVENTO_PER_KIND: Record<EmailTemplateKind, EventoTipo> = {
   pdf: "invio_pdf",
@@ -542,7 +517,7 @@ export function defaultMailboxForUser(userId: string): string | null {
   return null;
 }
 
-/** Template variable substitution (MAIL-03). */
+/** Fills the {job_number}, {job_name}, {customer} and {user_name} variables. */
 export function renderTemplate(
   tpl: string,
   ctx: {
@@ -570,8 +545,6 @@ export interface InviaEmailPayload {
   allegatoNome?: string;
   /** Id of the job PDF file to attach. */
   allegatoFileId?: string;
-  /** If true, simulates a send failure (MAIL-07) without calling the server. */
-  simulaErrore?: boolean;
   /** Target status: when set, a successful send advances the job. */
   advanceState?: StatoCommessa;
 }
@@ -581,7 +554,7 @@ export async function inviaEmail(
   userId: string,
   p: InviaEmailPayload,
 ): Promise<ActionResult & { emailId?: string }> {
-  const c = useCommesseStore.getState().commesse.find((x) => x.id === commessaId);
+  const c = findCommessa(commessaId);
   if (!c) return { ok: false, reason: "Job not found." };
   const denied = guardCanEdit(userId, commessaId, "Permission denied: you cannot send emails for this job.");
   if (denied) return denied;
@@ -609,53 +582,33 @@ export async function inviaEmail(
     }
   };
 
-  // 1) Send + permanent archive (MAIL-06).
-  //    Production: the Edge Function sends through the email provider and
-  //    inserts the row into email_inviate (even with status 'errore',
-  //    MAIL-07); here we only add the returned row to the store.
-  let em: EmailInviata;
-  let sendFailure: string | null = null;
-  if (emailViaSupabase() && !p.simulaErrore) {
-    const res = await sendEmailViaFunction({
-      commessaId,
-      kind: p.kind,
-      mittente: p.mittente,
-      destinatari: p.destinatari,
-      cc,
-      oggetto: p.oggetto,
-      corpo: p.corpo,
-      allegatoFileId: p.allegatoFileId,
-      allegatoNome: p.allegatoNome,
-    });
-    if (!res.sent && !res.email) {
-      // Rejected BEFORE archiving (auth/validation/network):
-      // nothing to record, the user can fix it and retry.
-      return { ok: false, reason: res.reason ?? "Sending failed." };
-    }
-    em = res.email!;
-    const emailStore = useEmailStore.getState();
-    emailStore.setEmailInviate([em, ...emailStore.emailInviate]);
-    if (!res.sent) sendFailure = res.reason ?? "Sending failed.";
-  } else {
-    const stato: EmailStato = p.simulaErrore ? "errore" : "inviata";
-    em = useEmailStore.getState().appendEmail({
-      commessaId,
-      templateKind: p.kind,
-      mittente: p.mittente,
-      destinatari: p.destinatari,
-      cc,
-      oggetto: p.oggetto,
-      corpo: p.corpo,
-      allegatoNome: p.allegatoNome,
-      inviataDaUserId: userId,
-      stato,
-    });
-    if (p.simulaErrore) sendFailure = "Simulated error (test).";
+  // 1) Send and archive. The Edge Function sends through the email provider
+  //    and archives the email server-side, failed sends included; here we
+  //    only add the archived row to the store.
+  const res = await sendEmailViaFunction({
+    commessaId,
+    kind: p.kind,
+    mittente: p.mittente,
+    destinatari: p.destinatari,
+    cc,
+    oggetto: p.oggetto,
+    corpo: p.corpo,
+    allegatoFileId: p.allegatoFileId,
+    allegatoNome: p.allegatoNome,
+  });
+  if (!res.email) {
+    // Rejected before archiving (auth, validation, network): nothing to
+    // record, the user can fix it and retry.
+    return { ok: false, reason: res.reason ?? "Sending failed." };
   }
+  const em = res.email;
+  const emailStore = useEmailStore.getState();
+  emailStore.setEmailInviate([em, ...emailStore.emailInviate]);
+  const sendFailure = res.sent ? null : (res.reason ?? "Sending failed.");
 
-  // 2) Advance the status ONLY if the send succeeded and it was requested.
-  //    If advancing fails, STILL record the send event: the email is
-  //    already archived and must leave a trace in the history.
+  // 2) Advance the status only if the send succeeded and it was requested.
+  //    If advancing fails, still record the send: the email is already
+  //    archived and must leave a trace in the history.
   if (!sendFailure && p.advanceState) {
     const res = performTransition({
       commessaId,
@@ -667,18 +620,17 @@ export async function inviaEmail(
       refType: "email",
       refId: em.id,
     });
-    if (res.ok === true) return flushEmailWrites(em.id);
-    const failure: { ok: false; reason: string; needsForzatura?: boolean } = res;
+    if (res.ok) return flushEmailWrites(em.id);
     useEventiStore.getState().appendEvento({
       commessaId,
       userId,
       tipo: eventoTipo,
       titolo: `${EMAIL_TEMPLATE_LABELS[p.kind]} — sent (status not advanced)`,
-      dettaglio: `${indirizzi} — ${failure.reason}`,
+      dettaglio: `${indirizzi} — ${res.reason}`,
       refType: "email",
       refId: em.id,
     });
-    return { ok: false, reason: failure.reason, needsForzatura: failure.needsForzatura, emailId: em.id };
+    return { ok: false, reason: res.reason, needsForzatura: res.needsForzatura, emailId: em.id };
   }
 
   useEventiStore.getState().appendEvento({

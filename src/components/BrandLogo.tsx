@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
  * Pure SVG: no real logo, no external images.
  * Colours echo the CMYK process inks of flexographic printing.
  */
-export const BRAND_COLORS = [
+const BRAND_COLORS = [
   "#00AEEF", // cyan
   "#EC008C", // magenta
   "#FFD200", // yellow

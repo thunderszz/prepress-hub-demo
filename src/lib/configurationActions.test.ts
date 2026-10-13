@@ -1,11 +1,10 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const fromMock = vi.fn();
 const resetPasswordMock = vi.fn();
 const invokeMock = vi.fn();
 
 vi.mock("./supabase", () => ({
-  hasSupabaseConfig: true,
   supabase: {
     from: (...args: unknown[]) => fromMock(...args),
     functions: {
@@ -29,7 +28,6 @@ import {
   useUsersStore,
   useUtenteGruppiStore,
 } from "./store";
-import { setDemoMode } from "./supabaseWrites";
 import type { EmailTemplate, User } from "./types";
 
 const user: User = {
@@ -63,14 +61,9 @@ beforeEach(() => {
   fromMock.mockReset();
   invokeMock.mockReset();
   resetPasswordMock.mockReset();
-  setDemoMode(false);
   useUsersStore.setState({ users: [user] });
   useUtenteGruppiStore.setState({ utenteGruppi: [] });
   useTemplatesStore.setState({ templates: [template] });
-});
-
-afterEach(() => {
-  setDemoMode(false);
 });
 
 describe("configurationActions", () => {

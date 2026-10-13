@@ -1,24 +1,20 @@
-// =============================================================
-// Workflow — the job (Commessa) state machine (PHASE 1)
+// The job state machine.
 //
-// - The job `stato` is the SINGLE source of truth.
-// - The metro stop (StepKey) is DERIVED through STEP_BY_STATO.
-// - Allowed transitions are encoded here; specific constraints
-//   (e.g. WF-19) are explicit. Transitions not listed are only
-//   allowed as an `override` (`forzatura`, mandatory note — §5).
-// =============================================================
+// The job's `stato` is the single source of truth; the metro-map stop is
+// derived from it. Allowed transitions are listed in NEXT, with their extra
+// conditions in canTransition. Any other move is only possible as an
+// override (`forzatura`), which requires a note.
 
 import {
   Commessa,
   EsitoCaduta,
   EsitoProvaColore,
-  STATI,
   StatoCommessa,
   StepKey,
 } from "./types";
 
 /** Status → metro stop (8 stops). */
-export const STEP_BY_STATO: Record<StatoCommessa, StepKey> = {
+const STEP_BY_STATO: Record<StatoCommessa, StepKey> = {
   disponibile: "pool",
   assegnata: "assegnazione",
   in_lavorazione: "lavorazione_pdf",
@@ -32,9 +28,6 @@ export const STEP_BY_STATO: Record<StatoCommessa, StepKey> = {
 /** Current step derived from the status. */
 export const stepOf = (c: Pick<Commessa, "stato">): StepKey => STEP_BY_STATO[c.stato];
 
-/** Index (0..7) of the current stop, used by the metro map. */
-export const stepIndexOf = (c: Pick<Commessa, "stato">): number =>
-  STATI.indexOf(c.stato);
 
 /** "Natural" transitions allowed without an override. */
 const NEXT: Record<StatoCommessa, StatoCommessa[]> = {
@@ -63,8 +56,8 @@ export type TransitionResult =
  * Checks whether the `from` → `to` transition is allowed in this context.
  *
  * Explicit constraints:
- *   - WF-19: reaching `in_attesa_approvazione_caduta` requires a
- *     colour proof outcome.
+ *   - Reaching `in_attesa_approvazione_caduta` requires the colour proof
+ *     to be "not required" or "sent and approved".
  *   - Reaching `in_produzione_matrice` requires `esitoCaduta = "approvata"`.
  *   - Any jump outside `NEXT[from]` requires `forzatura.nota`.
  */
@@ -82,7 +75,7 @@ export function canTransition(
         return {
           ok: false,
           reason:
-            "The colour proof must be 'Not required' or 'Sent and approved' before sending the press proof (WF-18/19).",
+            "The colour proof must be 'Not required' or 'Sent and approved' before sending the press proof.",
           needsForzatura: true,
         };
       }
@@ -104,9 +97,3 @@ export function canTransition(
     needsForzatura: true,
   };
 }
-
-/** Statuses reachable from `from` without an override. */
-export const nextStates = (from: StatoCommessa): StatoCommessa[] => [...NEXT[from]];
-
-/** True if the status is terminal (shipped). */
-export const isTerminale = (s: StatoCommessa) => s === "spedito";

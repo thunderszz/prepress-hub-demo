@@ -1,9 +1,8 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const fromMock = vi.fn();
 
 vi.mock("./supabase", () => ({
-  hasSupabaseConfig: true,
   supabase: {
     from: (...args: unknown[]) => fromMock(...args),
   },
@@ -15,7 +14,6 @@ import {
   renameClienteManuale,
 } from "./manualCommessa";
 import { useClientiStore, useCommesseStore, useEventiStore } from "./store";
-import { setDemoMode } from "./supabaseWrites";
 import type { Cliente } from "./types";
 
 const cliente: Cliente = {
@@ -82,15 +80,10 @@ function insertSingle(result: { data?: unknown; error?: unknown; omonima?: unkno
 }
 
 beforeEach(() => {
-  setDemoMode(false);
   useClientiStore.getState().setClienti([cliente]);
   useCommesseStore.getState().setCommesse([]);
   useEventiStore.getState().setEventi([]);
   fromMock.mockReset();
-});
-
-afterEach(() => {
-  setDemoMode(false);
 });
 
 describe("createCommessaManuale", () => {
@@ -350,19 +343,6 @@ describe("createCommessaManuale", () => {
     expect(useEventiStore.getState().eventi).toHaveLength(0);
   });
 
-  it("refuses in QA demo mode without touching the database", async () => {
-    setDemoMode(true);
-
-    const r = await createCommessaManuale(
-      { numeroCommessa: "2026/8812", nomeLavoro: "Label", clienteId: "cli-1" },
-      "user-1",
-    );
-
-    expect(r.ok).toBe(false);
-    if (r.ok === false) expect(r.reason).toMatch(/demo/i);
-    expect(fromMock).not.toHaveBeenCalled();
-  });
-
   it("rejects a malformed email for the new customer before writing anything", async () => {
     const commesse = insertSingle({ data: commessaRow() });
     const clienti = insertSingle({ data: clienteRow() });
@@ -523,16 +503,6 @@ describe("createClienteManuale", () => {
     }
   });
 
-  it("refuses in QA demo mode without touching the database", async () => {
-    setDemoMode(true);
-    fromMock.mockImplementation(() => insertSingle({ data: clienteRow() }));
-
-    const r = await createClienteManuale({ nome: "Fabrikam Pasta Ltd" });
-
-    expect(r.ok).toBe(false);
-    if (r.ok === false) expect(r.reason).toMatch(/demo/i);
-    expect(fromMock).not.toHaveBeenCalled();
-  });
 });
 
 /** `clienti` stub for `.update(...).eq("id", ...).select().single()`. */
@@ -673,14 +643,4 @@ describe("renameClienteManuale", () => {
     expect(fromMock).not.toHaveBeenCalled();
   });
 
-  it("refuses in QA demo mode without touching the database", async () => {
-    setDemoMode(true);
-    rinominaComunque();
-
-    const r = await renameClienteManuale("cli-1", "Contoso Waters Ltd");
-
-    expect(r.ok).toBe(false);
-    if (r.ok === false) expect(r.reason).toMatch(/demo/i);
-    expect(fromMock).not.toHaveBeenCalled();
-  });
 });

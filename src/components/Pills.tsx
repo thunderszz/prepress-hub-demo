@@ -1,12 +1,5 @@
 import { cn } from "@/lib/utils";
-import {
-  EmailStato,
-  EsitoProvaColore,
-  Role,
-  ROLE_LABELS,
-  StatoCommessa,
-  STATO_LABELS,
-} from "@/lib/types";
+import { EsitoProvaColore, StatoCommessa, STATO_LABELS } from "@/lib/types";
 
 type Tone = "todo" | "progress" | "done" | "late" | "urgent" | "ready" | "neutral";
 
@@ -77,13 +70,4 @@ export function StatoCommessaPill({
 }) {
   if (sospesa) return <Pill tone="late">On hold</Pill>;
   return <Pill tone={STATO_TONE[stato]}>{statoLabel({ stato, esitoProvaColore })}</Pill>;
-}
-
-export function EmailStatoPill({ stato }: { stato: EmailStato }) {
-  if (stato === "inviata") return <Pill tone="done">Sent</Pill>;
-  return <Pill tone="late">Error</Pill>;
-}
-
-export function RolePill({ role }: { role: Role }) {
-  return <Pill tone="ready">{ROLE_LABELS[role]}</Pill>;
 }

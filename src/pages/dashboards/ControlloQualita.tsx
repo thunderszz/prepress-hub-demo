@@ -1,10 +1,8 @@
 import { useCommesseStore, useCurrentSession } from "@/lib/store";
 import { MetricCard } from "@/components/MetricCard";
 import { Button } from "@/components/ui/button";
-import {
-  Card, CommesseMiniTable, DashHeader, KpiGrid,
-  isSpedito, speditoOggi, speditoQuestoMese, useClienteMap,
-} from "./_shared";
+import { speditoOggi, speditoQuestoMese, useClienteMap } from "./metrics";
+import { Card, CommesseMiniTable, DashHeader, KpiGrid } from "./widgets";
 import { advanceTo } from "@/lib/workflowActions";
 import { toast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";

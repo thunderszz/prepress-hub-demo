@@ -1,4 +1,4 @@
-import { supabase, hasSupabaseConfig } from "./supabase";
+import { supabase } from "./supabase";
 import type { Database } from "./database.types";
 import {
   Cliente,
@@ -16,21 +16,9 @@ function report(error: unknown) {
   else console.error("Supabase write failed:", error);
 }
 
-// QA demo mode: when on, NO write reaches the database.
-// Used by the original QA "demo session" that filled the UI with fake data.
-let demoMode = false;
-export function setDemoMode(value: boolean): void {
-  demoMode = value;
-}
-export function isDemoMode(): boolean {
-  return demoMode;
-}
-const writesDisabled = () => !hasSupabaseConfig || demoMode;
-
 let pendingWrites: Promise<void>[] = [];
 
 async function run(label: string, op: PromiseLike<{ error: { message: string } | null }>) {
-  if (writesDisabled()) return;
   const { error } = await op;
   if (error) throw new Error(`${label}: ${error.message}`);
 }
@@ -45,19 +33,14 @@ function queue(promise: Promise<void>) {
 }
 
 export async function flushPendingWrites(): Promise<void> {
-  if (demoMode) {
-    pendingWrites = [];
-    return;
-  }
   const batch = pendingWrites;
   pendingWrites = [];
   await Promise.all(batch);
 }
 
-// Customer record (CLI-04): only the hand-editable fields.
+// Customer record: only the fields edited by hand.
 // Explicit `field: undefined` = cleared → null in the DB.
 export function persistClientePatch(id: string, patch: Partial<Cliente>) {
-  if (writesDisabled()) return;
   const row: Database["public"]["Tables"]["clienti"]["Update"] = {};
   if ("email" in patch) row.email = patch.email ?? null;
   if ("telefono" in patch) row.telefono = patch.telefono ?? null;
@@ -67,7 +50,6 @@ export function persistClientePatch(id: string, patch: Partial<Cliente>) {
 }
 
 export function persistCommessaPatch(id: string, patch: Partial<Commessa>) {
-  if (writesDisabled()) return;
   const row: Database["public"]["Tables"]["commesse"]["Update"] = {};
   if (patch.stato !== undefined) row.stato = patch.stato;
   if (patch.sospensioneAttivaId !== undefined) row.sospensione_attiva_id = patch.sospensioneAttivaId ?? null;
@@ -86,7 +68,6 @@ export function persistCommessaPatch(id: string, patch: Partial<Commessa>) {
 }
 
 export function persistAssegnatari(commessaId: string, rows: CommessaAssegnatario[]) {
-  if (writesDisabled()) return;
   const payload = rows.map((r) => ({
     commessa_id: r.commessaId,
     user_id: r.userId,

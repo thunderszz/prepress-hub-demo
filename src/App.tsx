@@ -1,53 +1,53 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppLayout } from "@/components/AppLayout";
 import Dashboard from "./pages/Dashboard";
 import Commesse from "./pages/Commesse";
 import CommessaDetail from "./pages/CommessaDetail";
 import Clienti from "./pages/Clienti";
 import ClienteDetail from "./pages/ClienteDetail";
-import Configurazione from "./pages/Configurazione";
 import Profilo from "./pages/Profilo";
 import Login from "./pages/Login";
 import Logout from "./pages/Logout";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound.tsx";
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { loadAppData, subscribeToRealtime } from "@/lib/supabaseData";
-import { isDemoMode } from "@/lib/supabaseWrites";
 import { useSessionStore } from "@/lib/store";
 
-const queryClient = new QueryClient();
+// Settings is the largest page and the least visited: load it on demand.
+const Configurazione = lazy(() => import("./pages/Configurazione"));
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <SupabaseBootstrap />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/logout" element={<Logout />} />
-          <Route element={<AppLayout />}>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/jobs" element={<Commesse />} />
-            <Route path="/jobs/:id" element={<CommessaDetail />} />
-            <Route path="/customers" element={<Clienti />} />
-            <Route path="/customers/:id" element={<ClienteDetail />} />
-            <Route path="/settings" element={<Configurazione />} />
-            <Route path="/profile" element={<Profilo />} />
-          </Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <>
+    <Toaster />
+    <SupabaseBootstrap />
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/logout" element={<Logout />} />
+        <Route element={<AppLayout />}>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/jobs" element={<Commesse />} />
+          <Route path="/jobs/:id" element={<CommessaDetail />} />
+          <Route path="/customers" element={<Clienti />} />
+          <Route path="/customers/:id" element={<ClienteDetail />} />
+          <Route
+            path="/settings"
+            element={
+              <Suspense fallback={null}>
+                <Configurazione />
+              </Suspense>
+            }
+          />
+          <Route path="/profile" element={<Profilo />} />
+        </Route>
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </BrowserRouter>
+  </>
 );
 
 export default App;
@@ -74,12 +74,6 @@ function SupabaseBootstrap() {
         stopRealtime();
         logout();
         setHasHydrated(true);
-        return;
-      }
-
-      // During a QA demo session data is fake and lives only in memory:
-      // no auth event (refocus, token refresh, ...) may reload it from the DB.
-      if (isDemoMode()) {
         return;
       }
 

@@ -8,12 +8,6 @@ import {
 import { utentiAssegnabili } from "@/lib/permissions";
 import { MetricCard } from "@/components/MetricCard";
 import {
-  AlertList,
-  Card,
-  CommesseMiniTable,
-  DashHeader,
-  KpiGrid,
-  UltimiEventi,
   useAlertsMap,
   useAssegnatariCount,
   useGruppiInfo,
@@ -22,7 +16,8 @@ import {
   isSpedito,
   isSospesa,
   speditoQuestoMese,
-} from "./_shared";
+} from "./metrics";
+import { AlertList, Card, CommesseMiniTable, DashHeader, KpiGrid, UltimiEventi } from "./widgets";
 
 export function DashboardProduzione() {
   const commesse = useCommesseStore((s) => s.commesse);

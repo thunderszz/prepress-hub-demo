@@ -1,10 +1,10 @@
 -- =============================================================
--- 0009 — Job file storage + retention (REQUIREMENTS v0.4 §9, MAIL-06)
+-- 0009 — Job file storage and retention
 -- Private bucket for binaries, policies aligned with the RLS of
 -- file_commessa, configurable automatic cleanup through pg_cron.
 -- =============================================================
 
--- 1) Private bucket. Allowed formats §9 (PDF/JPEG/PNG), 50 MB limit.
+-- 1) Private bucket. PDF, JPEG and PNG only, 50 MB limit.
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values (
   'commessa-files', 'commessa-files', false, 52428800,
@@ -53,7 +53,7 @@ create policy commessa_files_select on storage.objects
     )
   );
 
--- INSERT/UPDATE (upload and overwrite FILE-02): same permissions as
+-- INSERT/UPDATE (upload, and overwrite by name): same permissions as
 -- inserting into file_commessa (can_edit_workflow on the job).
 drop policy if exists commessa_files_insert on storage.objects;
 create policy commessa_files_insert on storage.objects
@@ -76,9 +76,9 @@ create policy commessa_files_update on storage.objects
   );
 
 -- No DELETE policy for users: binaries are only deleted by
--- server-side retention (FILE-04).
+-- server-side retention.
 
--- 4) Retention FILE-04 + MAIL-06: flags the metadata and deletes the
+-- 4) Retention (files and email attachments): flags the metadata and deletes the
 --    binaries N days after shipping. N is configurable in impostazioni
 --    (retention_file_giorni / retention_pdf_email_giorni, default 30).
 create or replace function app_private.apply_file_retention()

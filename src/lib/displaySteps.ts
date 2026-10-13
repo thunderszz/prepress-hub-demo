@@ -1,4 +1,3 @@
-// =============================================================
 // Display steps — VISUAL sequence of the metro map (customer request)
 //
 // The state machine stays the one in workflow.ts (8 `StatoCommessa`,
@@ -15,7 +14,6 @@
 //  - a dot turns green ("done") every time a step is passed;
 //  - if `PDF_01` is rejected it stays RED ("rejected") and `PDF_02`
 //    appears after it (generalised to PDF_0n through `revisioniPdf`).
-// =============================================================
 
 import {
   Cog,

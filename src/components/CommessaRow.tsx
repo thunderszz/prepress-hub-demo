@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Commessa, Cliente } from "@/lib/types";
-import { StatoCommessaPill, Pill } from "@/components/Pills";
+import { StatoCommessaPill } from "@/components/Pills";
 import { JobProgressMini } from "@/components/JobProgressMini";
 import { AlertItem } from "@/lib/alerts";
 import { useUsersStore } from "@/lib/store";
@@ -94,9 +94,4 @@ export function CommessaRowCompact({ commessa: c, cliente }: { commessa: Commess
       </td>
     </tr>
   );
-}
-
-export function AlertBadge({ count, tone = "danger" }: { count: number; tone?: "danger" | "warning" }) {
-  if (count === 0) return null;
-  return <Pill tone={tone === "danger" ? "late" : "urgent"}>{count}</Pill>;
 }

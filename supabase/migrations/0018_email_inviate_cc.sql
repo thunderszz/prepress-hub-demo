@@ -3,10 +3,10 @@
 --
 -- Carbon copy on sent emails (customer request, 23/09/2026).
 -- Customer emails arrive with different people in CC for each job;
--- the portal does not read incoming mail (MAIL-01), so the sender
+-- the portal does not read incoming mail, so the sender
 -- pastes the CC list into the wizard on every send. The send-email
 -- Edge Function passes them to the email provider and archives them
--- here with the rest of the message (MAIL-06: the archive keeps recipients).
+-- here with the rest of the message (the archive keeps every recipient).
 --
 -- Additive only: a column with a constant default, no table rewrite;
 -- already archived rows get '{}'. Reading is covered by the existing

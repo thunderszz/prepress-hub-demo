@@ -66,14 +66,14 @@ afterEach(() => {
 });
 
 describe("FileTab", () => {
-  it("no longer shows the email trigger (moved to Overview)", () => {
+  it("does not offer the email action, which lives in Overview", () => {
     render(<FileTab commessa={commessa} />);
 
     expect(screen.queryByRole("button", { name: /invia pdf al cliente/i })).not.toBeInTheDocument();
     expect(screen.queryByText(/send email/i)).not.toBeInTheDocument();
   });
 
-  it("no longer shows the WeTransfer trigger (moved to Overview)", () => {
+  it("does not offer the WeTransfer action, which lives in Overview", () => {
     render(<FileTab commessa={commessa} />);
 
     expect(screen.queryByRole("button", { name: /log wetransfer delivery/i })).not.toBeInTheDocument();

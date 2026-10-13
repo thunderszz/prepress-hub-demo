@@ -1,17 +1,15 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Mock of the Supabase client: tests must not touch the network.
 const invokeMock = vi.fn();
 vi.mock("./supabase", () => ({
-  hasSupabaseConfig: true,
   supabase: {
     // lazy: vi.mock is hoisted, a direct reference to invokeMock is not initialised yet
     functions: { invoke: (...args: unknown[]) => invokeMock(...args) },
   },
 }));
 
-import { emailViaSupabase, sendEmailViaFunction } from "./emailSend";
-import { setDemoMode } from "./supabaseWrites";
+import { sendEmailViaFunction } from "./emailSend";
 
 const EMAIL_ROW = {
   id: "email-1",
@@ -31,22 +29,6 @@ const EMAIL_ROW = {
 
 beforeEach(() => {
   invokeMock.mockReset();
-  setDemoMode(false);
-});
-
-afterEach(() => {
-  setDemoMode(false);
-});
-
-describe("emailViaSupabase", () => {
-  it("is on when the Supabase config is present", () => {
-    expect(emailViaSupabase()).toBe(true);
-  });
-
-  it("in QA demo mode it NEVER sends from the server", () => {
-    setDemoMode(true);
-    expect(emailViaSupabase()).toBe(false);
-  });
 });
 
 describe("sendEmailViaFunction", () => {
@@ -72,7 +54,7 @@ describe("sendEmailViaFunction", () => {
     }));
   });
 
-  it("failed but archived send (MAIL-07): returns the row with error status", async () => {
+  it("failed but archived send: returns the row with error status", async () => {
     invokeMock.mockResolvedValue({
       data: {
         ok: false,

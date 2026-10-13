@@ -3,7 +3,7 @@
 --
 -- Adds the event type for the creation of a job made by hand in
 -- the portal. Without this value manual creation cannot be written
--- to the history (LOG-02) and the job would be born without author
+-- to the history and the job would be born without author
 -- and date.
 --
 -- Kept separate from 0017: in the first draft 0017 referenced this

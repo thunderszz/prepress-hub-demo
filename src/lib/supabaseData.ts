@@ -1,5 +1,4 @@
 import { supabase } from "./supabase";
-import { isDemoMode } from "./supabaseWrites";
 import {
   Cliente,
   Commessa,
@@ -96,7 +95,7 @@ export const mapCommessa = (r: Row<"commesse">): Commessa => ({
   annullataIl: clean(r.annullata_il),
 });
 
-export const mapAssegnatario = (r: Row<"commessa_assegnatari">): CommessaAssegnatario => ({
+const mapAssegnatario = (r: Row<"commessa_assegnatari">): CommessaAssegnatario => ({
   commessaId: r.commessa_id,
   userId: r.user_id,
   assegnatoIl: r.assegnato_il,
@@ -128,7 +127,7 @@ export const mapEmail = (r: Row<"email_inviate">): EmailInviata => ({
   corpo: r.corpo,
   allegatoNome: clean(r.allegato_nome),
   allegatoDisponibile: r.allegato_disponibile,
-  inviataDaUserId: r.inviata_da_user_id,
+  inviataDaUserId: clean(r.inviata_da_user_id),
   stato: r.stato,
 });
 
@@ -139,7 +138,7 @@ const mapFile = (r: Row<"file_commessa">): FileCommessa => ({
   tipo: r.tipo,
   dimensioneBytes: Number(r.dimensione_bytes),
   caricatoIl: r.caricato_il,
-  caricatoDaUserId: r.caricato_da_user_id,
+  caricatoDaUserId: clean(r.caricato_da_user_id),
   binarioDisponibile: r.binario_disponibile,
   storagePath: r.storage_path,
 });
@@ -222,10 +221,6 @@ async function hydrateStores(): Promise<User[]> {
     requireData(supabase.from("email_template").select("*").order("kind")),
   ]);
 
-  if (isDemoMode()) {
-    return useUsersStore.getState().users;
-  }
-
   const mappedUsers = users.map(mapUser);
 
   useUsersStore.getState().setUsers(mappedUsers);
@@ -266,11 +261,9 @@ export async function loadAppData(): Promise<User | null> {
   return current;
 }
 
-// Re-syncs the UI with the real DB data. Used after a rejected write
-// (the UI had optimistically updated the screen: here the truth comes back).
-// In QA demo mode it does nothing: it must never overwrite fake data.
+// Re-syncs the UI with the database after a rejected write: the UI had
+// already updated optimistically, so the database's version wins.
 export async function reloadFromSupabase(): Promise<void> {
-  if (isDemoMode()) return;
   const { data, error } = await supabase.auth.getUser();
   if (error || !data.user?.email) return;
   await hydrateStores();
@@ -283,12 +276,9 @@ export function subscribeToRealtime(): () => void {
       "postgres_changes",
       { event: "*", schema: "public", table: "commesse" },
       async () => {
-        if (isDemoMode()) return;
         const rows = await requireData(
           supabase.from("commesse").select("*").order("aggiornata_il", { ascending: false }),
         );
-        // Demo mode may have started during the await: don't overwrite fake data.
-        if (isDemoMode()) return;
         useCommesseStore.getState().setCommesse(rows.map(mapCommessa));
       },
     )
@@ -296,9 +286,7 @@ export function subscribeToRealtime(): () => void {
       "postgres_changes",
       { event: "*", schema: "public", table: "commessa_assegnatari" },
       async () => {
-        if (isDemoMode()) return;
         const rows = await requireData(supabase.from("commessa_assegnatari").select("*"));
-        if (isDemoMode()) return;
         useAssegnatariStore.getState().setAssegnatariRows(rows.map(mapAssegnatario));
       },
     )
