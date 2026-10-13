@@ -15,7 +15,6 @@ import NotFound from "./pages/NotFound.tsx";
 import { useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { loadAppData, subscribeToRealtime } from "@/lib/supabaseData";
-import { isDemoMode } from "@/lib/supabaseWrites";
 import { useSessionStore } from "@/lib/store";
 
 const App = () => (
@@ -66,12 +65,6 @@ function SupabaseBootstrap() {
         stopRealtime();
         logout();
         setHasHydrated(true);
-        return;
-      }
-
-      // During a QA demo session data is fake and lives only in memory:
-      // no auth event (refocus, token refresh, ...) may reload it from the DB.
-      if (isDemoMode()) {
         return;
       }
 

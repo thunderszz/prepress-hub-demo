@@ -291,16 +291,10 @@ export const useEventiStore = create<EventiState>()((set) => ({
 interface EmailState {
   emailInviate: EmailInviata[];
   setEmailInviate: (rows: EmailInviata[]) => void;
-  appendEmail: (e: Omit<EmailInviata, "id" | "data"> & { data?: string }) => EmailInviata;
 }
 export const useEmailStore = create<EmailState>()((set) => ({
   emailInviate: [],
   setEmailInviate: (emailInviate) => set({ emailInviate }),
-  appendEmail: (e) => {
-    const em: EmailInviata = { ...e, id: uid(), data: e.data ?? nowIso() };
-    set((s) => ({ emailInviate: [em, ...s.emailInviate] }));
-    return em;
-  },
 }));
 
 // =============================================================

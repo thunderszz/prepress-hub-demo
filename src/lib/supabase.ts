@@ -9,6 +9,4 @@
 
 import { createMockClient } from "./demo/mockClient";
 
-export const hasSupabaseConfig = true;
-
 export const supabase = createMockClient();

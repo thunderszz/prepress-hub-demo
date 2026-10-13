@@ -31,7 +31,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -82,7 +81,6 @@ export function EmailWizardDialog({
   const [oggetto, setOggetto] = useState("");
   const [corpo, setCorpo] = useState("");
   const [allegatoNome, setAllegatoNome] = useState("");
-  const [simulaErrore, setSimulaErrore] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [sending, setSending] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -113,7 +111,6 @@ export function EmailWizardDialog({
     // Prefer an uploaded PDF; otherwise a photo is fine too (colour proof).
     const defaultAllegato = attachableFiles.find((f) => f.tipo === "PDF") ?? attachableFiles[0];
     setAllegatoNome(defaultAllegato?.nome ?? "");
-    setSimulaErrore(false);
     setHasError(false);
     setSending(false);
   }, [
@@ -165,7 +162,6 @@ export function EmailWizardDialog({
       corpo,
       allegatoNome: allegatoNome.trim() || undefined,
       allegatoFileId: allegato?.id,
-      simulaErrore,
       advanceState,
     };
     try {
@@ -188,7 +184,6 @@ export function EmailWizardDialog({
   };
 
   const retry = () => {
-    setSimulaErrore(false);
     setHasError(false);
     // The user then clicks "Send", which will now succeed (toggle off)
   };
@@ -386,15 +381,6 @@ export function EmailWizardDialog({
             </p>
           </Field>
 
-          {import.meta.env.DEV && (
-            <label className="flex items-center gap-2 text-[12px] text-muted-foreground pt-1">
-              <Checkbox
-                checked={simulaErrore}
-                onCheckedChange={(v) => setSimulaErrore(!!v)}
-              />
-              Simulate a send error (to test retry)
-            </label>
-          )}
         </div>
 
         <DialogFooter className="gap-2">

@@ -11,8 +11,6 @@
 // =============================================================
 
 import {
-  EmailInviata,
-  EmailStato,
   EmailTemplateKind,
   EMAIL_TEMPLATE_LABELS,
   EsitoCaduta,
@@ -38,7 +36,7 @@ import {
   performTransition,
 } from "./store";
 import { canEditWorkflow, canMarkShipped, Session } from "./permissions";
-import { emailViaSupabase, sendEmailViaFunction } from "./emailSend";
+import { sendEmailViaFunction } from "./emailSend";
 import { flushPendingWrites } from "./supabaseWrites";
 
 export type ActionResult =
@@ -568,8 +566,6 @@ export interface InviaEmailPayload {
   allegatoNome?: string;
   /** Id of the job PDF file to attach. */
   allegatoFileId?: string;
-  /** If true, simulates a send failure (MAIL-07) without calling the server. */
-  simulaErrore?: boolean;
   /** Target status: when set, a successful send advances the job. */
   advanceState?: StatoCommessa;
 }
@@ -607,49 +603,29 @@ export async function inviaEmail(
     }
   };
 
-  // 1) Send + permanent archive (MAIL-06).
-  //    Production: the Edge Function sends through the email provider and
-  //    inserts the row into email_inviate (even with status 'errore',
-  //    MAIL-07); here we only add the returned row to the store.
-  let em: EmailInviata;
-  let sendFailure: string | null = null;
-  if (emailViaSupabase() && !p.simulaErrore) {
-    const res = await sendEmailViaFunction({
-      commessaId,
-      kind: p.kind,
-      mittente: p.mittente,
-      destinatari: p.destinatari,
-      cc,
-      oggetto: p.oggetto,
-      corpo: p.corpo,
-      allegatoFileId: p.allegatoFileId,
-      allegatoNome: p.allegatoNome,
-    });
-    if (!res.sent && !res.email) {
-      // Rejected BEFORE archiving (auth/validation/network):
-      // nothing to record, the user can fix it and retry.
-      return { ok: false, reason: res.reason ?? "Sending failed." };
-    }
-    em = res.email!;
-    const emailStore = useEmailStore.getState();
-    emailStore.setEmailInviate([em, ...emailStore.emailInviate]);
-    if (!res.sent) sendFailure = res.reason ?? "Sending failed.";
-  } else {
-    const stato: EmailStato = p.simulaErrore ? "errore" : "inviata";
-    em = useEmailStore.getState().appendEmail({
-      commessaId,
-      templateKind: p.kind,
-      mittente: p.mittente,
-      destinatari: p.destinatari,
-      cc,
-      oggetto: p.oggetto,
-      corpo: p.corpo,
-      allegatoNome: p.allegatoNome,
-      inviataDaUserId: userId,
-      stato,
-    });
-    if (p.simulaErrore) sendFailure = "Simulated error (test).";
+  // 1) Send and archive. The Edge Function sends through the email provider
+  //    and archives the email server-side, failed sends included; here we
+  //    only add the archived row to the store.
+  const res = await sendEmailViaFunction({
+    commessaId,
+    kind: p.kind,
+    mittente: p.mittente,
+    destinatari: p.destinatari,
+    cc,
+    oggetto: p.oggetto,
+    corpo: p.corpo,
+    allegatoFileId: p.allegatoFileId,
+    allegatoNome: p.allegatoNome,
+  });
+  if (!res.email) {
+    // Rejected before archiving (auth, validation, network): nothing to
+    // record, the user can fix it and retry.
+    return { ok: false, reason: res.reason ?? "Sending failed." };
   }
+  const em = res.email;
+  const emailStore = useEmailStore.getState();
+  emailStore.setEmailInviate([em, ...emailStore.emailInviate]);
+  const sendFailure = res.sent ? null : (res.reason ?? "Sending failed.");
 
   // 2) Advance the status ONLY if the send succeeded and it was requested.
   //    If advancing fails, STILL record the send event: the email is

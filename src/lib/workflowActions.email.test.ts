@@ -2,11 +2,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock of the Edge Function bridge: this tests inviaEmail's orchestration,
 // not the network.
-const emailViaSupabaseMock = vi.fn();
 const sendEmailViaFunctionMock = vi.fn();
 const flushPendingWritesMock = vi.fn();
 vi.mock("./emailSend", () => ({
-  emailViaSupabase: () => emailViaSupabaseMock(),
   sendEmailViaFunction: (req: unknown) => sendEmailViaFunctionMock(req),
 }));
 vi.mock("./supabaseWrites", () => ({
@@ -77,7 +75,6 @@ const payloadBase = {
 };
 
 beforeEach(() => {
-  emailViaSupabaseMock.mockReset().mockReturnValue(true);
   sendEmailViaFunctionMock.mockReset();
   flushPendingWritesMock.mockReset().mockResolvedValue(undefined);
   useUsersStore.setState({ users: [fullAccess] });
@@ -151,32 +148,6 @@ describe("inviaEmail — real send through the Edge Function", () => {
     expect(useEventiStore.getState().eventi).toHaveLength(0);
   });
 
-  it("simulaErrore (dev): local archive with error status, server NEVER called", async () => {
-    const res = await inviaEmail("commessa-1", fullAccess.id, {
-      ...payloadBase,
-      simulaErrore: true,
-    });
-
-    expect(res.ok).toBe(false);
-    expect(res.emailId).toBeDefined();
-    expect(sendEmailViaFunctionMock).not.toHaveBeenCalled();
-    expect(useEmailStore.getState().emailInviate[0].stato).toBe("errore");
-  });
-});
-
-describe("inviaEmail — QA demo mode (no server)", () => {
-  it("archives locally and records the event", async () => {
-    emailViaSupabaseMock.mockReturnValue(false);
-
-    const res = await inviaEmail("commessa-1", fullAccess.id, payloadBase);
-
-    expect(res.ok).toBe(true);
-    expect(sendEmailViaFunctionMock).not.toHaveBeenCalled();
-    const archived = useEmailStore.getState().emailInviate;
-    expect(archived).toHaveLength(1);
-    expect(archived[0].stato).toBe("inviata");
-    expect(useEventiStore.getState().eventi).toHaveLength(1);
-  });
 });
 
 describe("inviaEmail — carbon copy (CC)", () => {
@@ -207,11 +178,4 @@ describe("inviaEmail — carbon copy (CC)", () => {
     expect(useEventiStore.getState().eventi[0].dettaglio).toBe("To: cliente@example.test");
   });
 
-  it("in QA demo mode CC is archived locally too", async () => {
-    emailViaSupabaseMock.mockReturnValue(false);
-
-    await inviaEmail("commessa-1", fullAccess.id, { ...payloadBase, cc: ["john@customer.example"] });
-
-    expect(useEmailStore.getState().emailInviate[0].cc).toEqual(["john@customer.example"]);
-  });
 });

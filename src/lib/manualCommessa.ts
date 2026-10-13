@@ -22,8 +22,7 @@
 // the next refresh.
 // =============================================================
 
-import { hasSupabaseConfig, supabase } from "./supabase";
-import { isDemoMode } from "./supabaseWrites";
+import { supabase } from "./supabase";
 import { mapCliente, mapCommessa } from "./supabaseData";
 import { useClientiStore, useCommesseStore, useEventiStore } from "./store";
 import { isValidEmail } from "./emailValidation";
@@ -129,10 +128,6 @@ export async function createClienteManuale(input: NuovoClienteInput): Promise<Cl
   if (input.email?.trim() && !isValidEmail(input.email)) {
     return { ok: false, reason: "Invalid email: use the form name@domain.com." };
   }
-  if (!hasSupabaseConfig || isDemoMode()) {
-    return { ok: false, reason: "Customers cannot be created in demo mode." };
-  }
-
   const chiave = chiaveCliente(nome);
   const omonimo = useClientiStore.getState().clienti.find((c) => c.nomeChiave === chiave);
   if (omonimo) return { ok: false, reason: clienteGiaPresente(omonimo.nome) };
@@ -165,10 +160,6 @@ export async function createClienteManuale(input: NuovoClienteInput): Promise<Cl
 export async function renameClienteManuale(id: string, nuovoNome: string): Promise<ClienteOutcome> {
   const nome = nuovoNome.trim();
   if (!nome) return { ok: false, reason: "Customer name cannot be empty." };
-  if (!hasSupabaseConfig || isDemoMode()) {
-    return { ok: false, reason: "Customers cannot be edited in demo mode." };
-  }
-
   const { clienti } = useClientiStore.getState();
   const attuale = clienti.find((c) => c.id === id);
   if (!attuale) return { ok: false, reason: "Customer not found. Reload the page and try again." };
@@ -235,10 +226,6 @@ export async function createCommessaManuale(
   if (!input.clienteId && !input.nuovoCliente?.nome?.trim()) {
     return { ok: false, reason: "Pick an existing customer or enter the name of a new one." };
   }
-  if (!hasSupabaseConfig || isDemoMode()) {
-    return { ok: false, reason: "Jobs cannot be created in demo mode." };
-  }
-
   // Duplicate already visible in the list: fail immediately, without a
   // round trip to the database.
   const giaPresente = useCommesseStore

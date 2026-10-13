@@ -5,7 +5,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const fromMock = vi.fn();
 
 vi.mock("@/lib/supabase", () => ({
-  hasSupabaseConfig: true,
   supabase: {
     from: (...args: unknown[]) => fromMock(...args),
   },
@@ -14,7 +13,6 @@ vi.mock("@/lib/supabase", () => ({
 import ClienteDetail from "./ClienteDetail";
 import { Toaster } from "@/components/ui/toaster";
 import { useClientiStore, useCommesseStore, useSessionStore, useUsersStore } from "@/lib/store";
-import { setDemoMode } from "@/lib/supabaseWrites";
 import type { Cliente, User } from "@/lib/types";
 
 const responsabileProduzione: User = {
@@ -83,7 +81,6 @@ function renderScheda() {
 }
 
 beforeEach(() => {
-  setDemoMode(false);
   useClientiStore.setState({ clienti: [cliente, altro] });
   useCommesseStore.setState({ commesse: [] });
   fromMock.mockReset();

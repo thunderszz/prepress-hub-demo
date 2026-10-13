@@ -2,7 +2,7 @@ import { FormEvent, useMemo, useState } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { useCurrentUser, useSessionStore } from "@/lib/store";
-import { supabase, hasSupabaseConfig } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase";
 import { loadAppData } from "@/lib/supabaseData";
 import { sendPasswordReset } from "@/lib/configurationActions";
 import { toast } from "@/hooks/use-toast";
@@ -31,15 +31,6 @@ export default function Login() {
   const submit = async (event?: FormEvent, override?: { email: string; password: string }) => {
     event?.preventDefault();
     const creds = override ?? { email, password };
-    if (!hasSupabaseConfig) {
-      toast({
-        title: "Backend not configured",
-        description: "Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in the local .env file.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setLoading(true);
     try {
       const { error } = await supabase.auth.signInWithPassword({

@@ -1,5 +1,4 @@
-import { hasSupabaseConfig, supabase } from "./supabase";
-import { isDemoMode } from "./supabaseWrites";
+import { supabase } from "./supabase";
 import {
   useTemplatesStore,
   useUsersStore,
@@ -11,8 +10,6 @@ import type { Database } from "./database.types";
 type ConfigResult<T = never> =
   | { ok: true; value?: T }
   | { ok: false; reason: string };
-
-const writesDisabled = () => !hasSupabaseConfig || isDemoMode();
 
 function errorReason(error: { message?: string } | null | undefined): string {
   return error?.message || "Database write failed.";
@@ -51,27 +48,14 @@ export async function addUserProfile(data: {
   const email = data.email.trim().toLowerCase();
   if (!nome || !email) return { ok: false, reason: "Name and email are required." };
 
-  const user: User = {
-    id: crypto.randomUUID(),
-    nome,
-    email,
-    ruolo: data.ruolo,
-    attivo: true,
-    iniziali: initialsForName(nome),
-  };
-
-  if (!writesDisabled()) {
-    const redirectTo = typeof window !== "undefined" ? `${window.location.origin}/reset-password` : undefined;
-    const { data: payload, error } = await supabase.functions.invoke("invite-user", {
-      body: { nome, email, ruolo: data.ruolo, redirectTo },
-    });
-    if (error) return { ok: false, reason: await functionErrorReason(error) };
-    const returnedUser = (payload as { user?: User } | null)?.user;
-    if (!returnedUser) return { ok: false, reason: "Unexpected response from the invite server." };
-    useUsersStore.getState().setUsers([...useUsersStore.getState().users, returnedUser]);
-    return { ok: true, value: returnedUser };
-  }
-
+  // The invite-user function creates the auth account and the profile together.
+  const redirectTo = typeof window !== "undefined" ? `${window.location.origin}/reset-password` : undefined;
+  const { data: payload, error } = await supabase.functions.invoke("invite-user", {
+    body: { nome, email, ruolo: data.ruolo, redirectTo },
+  });
+  if (error) return { ok: false, reason: await functionErrorReason(error) };
+  const user = (payload as { user?: User } | null)?.user;
+  if (!user) return { ok: false, reason: "Unexpected response from the invite server." };
   useUsersStore.getState().setUsers([...useUsersStore.getState().users, user]);
   return { ok: true, value: user };
 }
@@ -87,16 +71,14 @@ export async function updateUserProfile(
   }
   if (patch.email !== undefined) nextPatch.email = patch.email.trim().toLowerCase();
 
-  if (!writesDisabled()) {
-    const row: Database["public"]["Tables"]["utenti"]["Update"] = {};
-    if (nextPatch.nome !== undefined) row.nome = nextPatch.nome;
-    if (nextPatch.email !== undefined) row.email = nextPatch.email;
-    if (nextPatch.ruolo !== undefined) row.ruolo = nextPatch.ruolo;
-    if (nextPatch.attivo !== undefined) row.attivo = nextPatch.attivo;
-    if (nextPatch.iniziali !== undefined) row.iniziali = nextPatch.iniziali;
-    const { error } = await supabase.from("utenti").update(row).eq("id", id);
-    if (error) return { ok: false, reason: errorReason(error) };
-  }
+  const row: Database["public"]["Tables"]["utenti"]["Update"] = {};
+  if (nextPatch.nome !== undefined) row.nome = nextPatch.nome;
+  if (nextPatch.email !== undefined) row.email = nextPatch.email;
+  if (nextPatch.ruolo !== undefined) row.ruolo = nextPatch.ruolo;
+  if (nextPatch.attivo !== undefined) row.attivo = nextPatch.attivo;
+  if (nextPatch.iniziali !== undefined) row.iniziali = nextPatch.iniziali;
+  const { error } = await supabase.from("utenti").update(row).eq("id", id);
+  if (error) return { ok: false, reason: errorReason(error) };
 
   useUsersStore.getState().updateUser(id, nextPatch);
   return { ok: true };
@@ -107,17 +89,11 @@ export async function setUserGroupMembership(
   gruppoId: string,
   enabled: boolean,
 ): Promise<ConfigResult> {
-  if (!writesDisabled()) {
-    const query = enabled
-      ? supabase.from("utente_gruppi").insert({ utente_id: userId, gruppo_id: gruppoId })
-      : supabase
-        .from("utente_gruppi")
-        .delete()
-        .eq("utente_id", userId)
-        .eq("gruppo_id", gruppoId);
-    const { error } = await query;
-    if (error) return { ok: false, reason: errorReason(error) };
-  }
+  const query = enabled
+    ? supabase.from("utente_gruppi").insert({ utente_id: userId, gruppo_id: gruppoId })
+    : supabase.from("utente_gruppi").delete().eq("utente_id", userId).eq("gruppo_id", gruppoId);
+  const { error } = await query;
+  if (error) return { ok: false, reason: errorReason(error) };
 
   const store = useUtenteGruppiStore.getState();
   if (enabled) store.addMembership(userId, gruppoId);
@@ -140,18 +116,16 @@ export async function updateEmailTemplateConfig(
   };
   const ultimaModificaIl = new Date().toISOString();
 
-  if (!writesDisabled()) {
-    const { error } = await supabase
-      .from("email_template")
-      .update({
-        oggetto: data.oggetto,
-        corpo: data.corpo,
-        ultima_modifica_da_user_id: data.userId,
-        ultima_modifica_il: ultimaModificaIl,
-      })
-      .eq("id", id);
-    if (error) return { ok: false, reason: errorReason(error) };
-  }
+  const { error } = await supabase
+    .from("email_template")
+    .update({
+      oggetto: data.oggetto,
+      corpo: data.corpo,
+      ultima_modifica_da_user_id: data.userId,
+      ultima_modifica_il: ultimaModificaIl,
+    })
+    .eq("id", id);
+  if (error) return { ok: false, reason: errorReason(error) };
 
   useTemplatesStore.getState().updateTemplate(id, {
     ...patch,
@@ -163,9 +137,6 @@ export async function updateEmailTemplateConfig(
 export async function sendPasswordReset(email: string): Promise<ConfigResult> {
   const cleanEmail = email.trim().toLowerCase();
   if (!cleanEmail) return { ok: false, reason: "Email is required." };
-  if (writesDisabled()) {
-    return { ok: false, reason: "Password reset is only available with a configured backend." };
-  }
 
   const redirectTo = typeof window !== "undefined" ? `${window.location.origin}/reset-password` : undefined;
   const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, { redirectTo });

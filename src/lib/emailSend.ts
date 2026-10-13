@@ -8,8 +8,7 @@
 // (In this demo the function is simulated by the mock client.)
 // =============================================================
 
-import { supabase, hasSupabaseConfig } from "./supabase";
-import { isDemoMode } from "./supabaseWrites";
+import { supabase } from "./supabase";
 import { mapEmail } from "./supabaseData";
 import type { EmailInviata, EmailTemplateKind } from "./types";
 import type { Database } from "./database.types";
@@ -28,11 +27,6 @@ export interface SendEmailRequest {
   /** Id of the job PDF to attach (downloaded server-side). */
   allegatoFileId?: string;
   allegatoNome?: string;
-}
-
-/** true = sending goes through the Edge Function (no QA demo, config present). */
-export function emailViaSupabase(): boolean {
-  return hasSupabaseConfig && !isDemoMode();
 }
 
 // Flat interface (not a discriminated union): with strict=false narrowing

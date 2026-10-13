@@ -1,10 +1,9 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Mock of the Supabase client: tests must not touch the network.
 const uploadMock = vi.fn();
 const createSignedUrlMock = vi.fn();
 vi.mock("./supabase", () => ({
-  hasSupabaseConfig: true,
   supabase: {
     // Tables: metadata writes succeed without a network.
     from: () => ({
@@ -18,7 +17,6 @@ vi.mock("./supabase", () => ({
 }));
 
 import { storagePathForFile, uploadCommessaFile, getFileDownloadUrl, FILES_BUCKET } from "./fileStorage";
-import { setDemoMode } from "./supabaseWrites";
 import { useFileStore, useEventiStore, useUsersStore } from "./store";
 
 const COMMESSA_ID = "11111111-2222-3333-4444-555555555555";
@@ -43,11 +41,6 @@ beforeEach(() => {
   });
   useFileStore.setState({ files: [] });
   useEventiStore.setState({ eventi: [] });
-  setDemoMode(false);
-});
-
-afterEach(() => {
-  setDemoMode(false);
 });
 
 describe("storagePathForFile", () => {
@@ -101,14 +94,6 @@ describe("uploadCommessaFile", () => {
     expect(res.ok).toBe(false);
     expect(useFileStore.getState().files).toHaveLength(0);
     expect(useEventiStore.getState().eventi).toHaveLength(0);
-  });
-
-  it("in QA demo mode never calls storage but updates the UI", async () => {
-    setDemoMode(true);
-    const res = await uploadCommessaFile(COMMESSA_ID, USER_ID, makeFile("demo.pdf"));
-    expect(res.ok).toBe(true);
-    expect(uploadMock).not.toHaveBeenCalled();
-    expect(useFileStore.getState().files).toHaveLength(1);
   });
 
   it("rejects formats not allowed (PDF/JPEG/PNG only, §9)", async () => {
